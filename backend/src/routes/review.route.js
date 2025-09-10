@@ -1,6 +1,6 @@
 import express from "express";
 import { authentication } from "../middleware/auth.middleware.js";
-import { createReviewController } from "../controllers/review.controller.js";
+import { createReviewController, deleteReviewController } from "../controllers/review.controller.js";
 import {
   validateCreateReview,
   handleValidationErrors,
@@ -15,4 +15,8 @@ router.post(
   createReviewController
 );
 
+router.delete("/product/:productId/delete",
+  authentication,
+  deleteReviewController
+)
 export default router;
