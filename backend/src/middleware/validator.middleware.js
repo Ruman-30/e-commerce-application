@@ -206,3 +206,20 @@ export const validateGetProductById = [
     .custom((value) => mongoose.Types.ObjectId.isValid(value))
     .withMessage("Invalid product ID format."),
 ];
+
+
+export const validateCreateReview = [
+  body("rating")
+  .notEmpty()
+  .withMessage("rating is required")
+  .isInt()
+  .withMessage("rating should be integar")
+  .custom((value)=> value > 0 && value <= 5)
+  .withMessage("rating should be between 1 to 5"),
+  body("comment")
+  .notEmpty()
+  .withMessage("comment is required")
+  .isString("comment should be string")
+  .isLength({max: 500})
+  .withMessage("comment cannot exceed 500 characters.")
+]

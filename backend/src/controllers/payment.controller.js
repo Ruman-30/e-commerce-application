@@ -8,35 +8,35 @@ import { sendOrderConfirmationEmail } from "../services/emailService.js";
 import { findById } from "../dao/user.dao.js";
 import { clearCart } from "../dao/cart.dao.js";
 
-export async function createPaymentOrderController(req, res) {
-  try {
-    const { orderId } = req.body;
-    const order = await findOrder(orderId);
-    if (!order) {
-      return res.status(404).json({ message: "Order not found!" });
-    }
+// export async function createPaymentOrderController(req, res) {
+//   try {
+//     const { orderId } = req.body;
+//     const order = await findOrder(orderId);
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found!" });
+//     }
 
-    const razorpayOrder = await createRazorpayOrder(order);
-    await updateOrderPayment(order._id, {
-      razorpay_order_id: razorpayOrder.id,
-      paymentStatus: "pending",
-    });
-    if (!razorpayOrder) {
-      return res
-        .status(400)
-        .json({ message: "Error creating payment for this order!" });
-    }
-    res.status(201).json({
-      message: "Order payment is created successfully.",
-      order: razorpayOrder,
-    });
-  } catch (error) {
-    console.error("Razorpay create order error:", error);
-    res
-      .status(500)
-      .json({ message: "Error creating Razorpay order", error: error.message });
-  }
-}
+//     const razorpayOrder = await createRazorpayOrder(order);
+//     await updateOrderPayment(order._id, {
+//       razorpay_order_id: razorpayOrder.id,
+//       paymentStatus: "pending",
+//     });
+//     if (!razorpayOrder) {
+//       return res
+//         .status(400)
+//         .json({ message: "Error creating payment for this order!" });
+//     }
+//     res.status(201).json({
+//       message: "Order payment is created successfully.",
+//       order: razorpayOrder,
+//     });
+//   } catch (error) {
+//     console.error("Razorpay create order error:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Error creating Razorpay order", error: error.message });
+//   }
+// }
 
 export async function verifyPaymentController(req, res) {
   try {

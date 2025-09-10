@@ -16,10 +16,11 @@ import {
   validateGetProductById,
 } from "../middleware/validator.middleware.js";
 import multer from "multer";
-const router = express.Router();
 
+const router = express.Router();
 const storage = multer.memoryStorage();
 const uploadMulter = multer({ storage: storage });
+
 router.post(
   "/",
   authentication,

@@ -5,6 +5,7 @@ import productRoutes from "./routes/product.routes.js"
 import cartRoutes from "./routes/cart.routes.js"
 import orderRoutes from "./routes/order.routes.js"
 import paymentRoutes from "./routes/payment.route.js"
+import reviewRoutes from "./routes/review.route.js"
 import cookieParser from "cookie-parser"
 const app = express()
 app.use(express.json())
@@ -16,4 +17,5 @@ app.use("/products", productRoutes)
 app.use("/cart", cartRoutes)
 app.use("/order", orderRoutes)
 app.use("/payment", paymentRoutes)
+app.use("/review", reviewRoutes)
 export default app

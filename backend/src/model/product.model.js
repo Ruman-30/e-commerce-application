@@ -29,9 +29,16 @@ const productSchema = new mongoose.Schema(
         publicId: { type: String, required: true },
       },
     ],
+    numOfReviews: {type: Number, default: 0},
+    averageRating: {type: Number, default: 0}
   },
   { timestamps: true }
 );
+
+productSchema.index({category: 1}, {createdAt: -1})
+productSchema.index({category: 1}, {price: 1})
+productSchema.index({price: 1})
+productSchema.index({name: "text"}, {description: "text"})
 
 const productModel = mongoose.model("Product", productSchema);
 export default productModel;

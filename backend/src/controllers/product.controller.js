@@ -41,7 +41,7 @@ export async function createProductController(req, res) {
       stock,
       images,
     });
-    await clearProductCache()
+    await clearProductCache();
     res.status(201).json({
       message: "Product created successfully.",
       product,
@@ -65,8 +65,8 @@ export async function deleteProductController(req, res) {
 
     await Promise.all(deletePromises);
     await deleteProductById(productId);
-    await clearProductCache(productId)
-    
+    await clearProductCache(productId);
+
     res.status(200).json({
       message: "Product and images deleted successfully",
       product,
@@ -107,7 +107,7 @@ export async function updateProductController(req, res) {
       }));
     }
     const updatedProduct = await updateProduct(productid, updatedData);
-    await clearProductCache(productid)
+    await clearProductCache(productid);
 
     res.status(200).json({
       message: "Product updated successfully",
@@ -150,30 +150,29 @@ export async function getAllProductsController(req, res) {
       filter.price = { $gte: minPrice, $lte: maxPrice };
     }
 
-    if (req.query.search && typeof req.query.search === "string") {
-      filter.name = { $regex: req.query.search, $options: "i" };
-    }
-
     let sort = { createdAt: -1 };
     if (req.query.sort) {
-       sort = { [req.query.sort]: req.query.order === "desc" ? -1 : 1 };
-}
+      sort = { [req.query.sort]: req.query.order === "desc" ? -1 : 1 };
+    }
+
     const cacheKey = `products:list:${JSON.stringify({
       filter,
       sort,
       limit,
       page,
+      search: req.query.search || ""  
     })}`;
+
     const cached = await redis.get(cacheKey);
     if (cached) {
       console.log("Serving products from Redis cache");
       return res.status(200).json({
         message: "Product fetched successfully (from cache).",
-        products: JSON.parse(cached)
+        products: JSON.parse(cached),
       });
     }
-    const products = await getAllProducts(filter, sort, skip, limit);
-    const totalProducts = await countProduct(filter);
+    const products = await getAllProducts({filter, sort, skip, limit, search: req.query.search});
+    const totalProducts = await countProduct({filter, search: req.query.search});
 
     const response = {
       message: "All products are fetched",
@@ -184,7 +183,7 @@ export async function getAllProductsController(req, res) {
     };
 
     await redis.set(cacheKey, JSON.stringify(response), "EX", 1000);
-     console.log("📦 Stored in cache:", cacheKey);
+    console.log("📦 Stored in cache:", cacheKey);
     res.status(200).json(response);
   } catch (error) {
     return res.status(500).json({
