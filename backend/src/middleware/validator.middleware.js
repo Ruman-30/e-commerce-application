@@ -167,7 +167,7 @@ export const validateCreateProduct = [
 ];
 
 export const validateDeleteProduct = [
-    body("productId")
+    param("productid")
     .notEmpty().withMessage("Product ID is required.")
     .isMongoId().withMessage("Invalid Product ID format."),
 ]

@@ -1,0 +1,148 @@
+paths:
+  /cart/add:
+    post:
+      summary: Add product to cart
+      description: Adds a product to the user's cart. If the product is already in the cart, its quantity will be incremented.
+      tags: [Cart]
+      security:
+        - bearerAuth: []   # JWT required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - quantity
+              properties:
+                productId:
+                  type: string
+                  example: 64f7b2a5c9e77a12b8a5e4d2
+                quantity:
+                  type: integer
+                  minimum: 1
+                  example: 2
+      responses:
+        "201":
+          description: Product successfully added to cart
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product added to cart.
+                  cart:
+                    type: object
+                    example:
+                      userId: 64f7b2a5c9e77a12b8a5e4d1
+                      items:
+                        - productId: 64f7b2a5c9e77a12b8a5e4d2
+                          quantity: 2
+        "403":
+          description: Product out of stock
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: This product is out of stock.
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product not found!
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error
+  /cart:
+    get:
+      summary: Get user's cart
+      description: Retrieves the current cart data of the logged-in user.
+      tags: [Cart]
+      security:
+        - bearerAuth: []   # JWT required
+      responses:
+        "200":
+          description: Cart fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cart fetched successfully.
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          type: string
+                          example: 64f7b2a5c9e77a12b8a5e4d2
+                        name:
+                          type: string
+                          example: iPhone 15 Pro
+                        image:
+                          type: string
+                          nullable: true
+                          example: https://example.com/images/iphone.jpg
+                        price:
+                          type: number
+                          example: 1299
+                        quantity:
+                          type: integer
+                          example: 2
+                        itemTotal:
+                          type: number
+                          example: 2598
+                  totalAmount:
+                    type: number
+                    example: 2598
+        "404":
+          description: Cart empty
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cart is empty
+                  items:
+                    type: array
+                    example: []
+                  totalAmount:
+                    type: number
+                    example: 0
+        "500":
+          description: Server error while fetching cart
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error fetching cart
+                  error:
+                    type: string
+                    example: Internal server error
+

@@ -7,10 +7,13 @@ import orderRoutes from "./routes/order.routes.js"
 import paymentRoutes from "./routes/payment.route.js"
 import reviewRoutes from "./routes/review.route.js"
 import cookieParser from "cookie-parser"
+import swaggerSpec from "./config/swagger.js"
+import swaggerUi from "swagger-ui-express"
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use(cookieParser())
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/auth", userRoutes)
 app.use("/admin", adminRoutes)
 app.use("/products", productRoutes)

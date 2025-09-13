@@ -17,7 +17,7 @@ export async function createReview({ userId, productId, rating, comment }) {
     rating,
     comment,
   });
-  
+
   const product = await productModel.findById(productId);
   const ratingSum = product.ratingSum + rating;
   const numOfReviews = product.numOfReviews + 1;
@@ -91,3 +91,15 @@ export async function hasPurchased({ userId, productId }) {
   });
 }
 
+export async function getAllReviews({productId, limit, skip}){
+  return await reviewModel
+  .find({product: productId})
+  .sort({createdAt: -1})
+  .limit(limit)
+  .skip(skip)
+  .populate("user", "name")
+}
+
+export async function countReviews({productId}){
+  return await reviewModel.countDocuments({product: productId})
+}

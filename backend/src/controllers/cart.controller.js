@@ -24,6 +24,11 @@ export async function addToCartController(req, res) {
       });
     }
 
+    if (product.stock <= 0) {
+      return res.status(403).json({
+        message: "This product is out of stock.",
+      });
+    }
     let cart = await increamentProductQuantity(userId, productId, quantity);
 
     if (!cart) {
@@ -77,7 +82,9 @@ export async function getCartController(req, res) {
       totalAmount,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching cart", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching cart", error: error.message });
   }
 }
 

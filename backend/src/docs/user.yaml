@@ -1,0 +1,124 @@
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user and get JWT token
+      tags: [Users]
+      security: []  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                address:
+                  type: object
+                  properties:
+                    street:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    postalCode:
+                      type: string
+                    country:
+                      type: string
+              required:
+                - name
+                - email
+                - password
+      responses:
+        "201":
+          description: User created successfully, returns JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      address:
+                        type: object
+                        properties:
+                          street:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            type: string
+                          postalCode:
+                            type: string
+                          country:
+                            type: string
+        "400":
+          description: Bad request
+
+  /auth/login:
+    post:
+      summary: Login user and get JWT token
+      tags: [Users]
+      security: []  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Login successful, returns JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      address:
+                        type: object
+                        properties:
+                          street:
+                            type: string
+                          city:
+                            type: string
+                          state:
+                            type: string
+                          postalCode:
+                            type: string
+                          country:
+                            type: string
+        "401":
+          description: Invalid credentials

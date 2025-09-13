@@ -1,0 +1,352 @@
+paths:
+  /products:
+    get:
+      summary: Get all products
+      description: Fetch products with filters, pagination, search, and sorting.
+      tags: [Products]
+      security:
+        - bearerAuth: []   # JWT required
+      parameters:
+        - name: category
+          in: query
+          required: false
+          description: Filter products by category
+          schema:
+            type: string
+            example: "Electronics"
+
+        - name: minPrice
+          in: query
+          required: false
+          description: Minimum price filter
+          schema:
+            type: number
+            example: 100
+
+        - name: maxPrice
+          in: query
+          required: false
+          description: Maximum price filter
+          schema:
+            type: number
+            example: 1000
+
+        - name: page
+          in: query
+          required: false
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+            example: 2
+
+        - name: limit
+          in: query
+          required: false
+          description: Number of products per page
+          schema:
+            type: integer
+            default: 10
+            example: 20
+
+        - name: sort
+          in: query
+          required: false
+          description: Field to sort by (e.g., price, createdAt)
+          schema:
+            type: string
+            example: "price"
+
+        - name: order
+          in: query
+          required: false
+          description: Sort order (asc or desc)
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+
+        - name: search
+          in: query
+          required: false
+          description: Search products by name or description
+          schema:
+            type: string
+            example: "wireless mouse"
+
+      responses:
+        "200":
+          description: Success, returns list of products with metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "All products are fetched"
+                  currentPage:
+                    type: integer
+                    example: 1
+                  totalPages:
+                    type: integer
+                    example: 5
+                  totalProducts:
+                    type: integer
+                    example: 47
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        price:
+                          type: number
+                        category:
+                          type: string
+                        stock:
+                          type: number
+                        images:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              url:
+                                type: string
+                              publicId:
+                                type: string
+                        numOfReviews:
+                          type: number
+                        averageRating:
+                          type: number
+        "401":
+          description: Unauthorized
+        "400":
+          description: Invalid query parameters
+        "500":
+          description: Internal server error
+    post:
+      summary: Create a new product (Admin only)
+      tags: [Products]
+      security:
+        - bearerAuth: []   # JWT required
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+                stock:
+                  type: number
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - name
+                - description
+                - price
+                - category
+      responses:
+        "201":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  price:
+                    type: number
+                  category:
+                    type: string
+                  stock:
+                    type: number
+                  images:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                        publicId:
+                          type: string
+                  numOfReviews:
+                    type: number
+                  averageRating:
+                    type: number
+        "403":
+          description: Forbidden (Not an admin)
+        "401":
+          description: Unauthorized
+  /products/{productId}:
+    get:
+      summary: Get a single product by ID
+      tags: [Products]
+      security:
+        - bearerAuth: []   # JWT required
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success, returns the product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  name:
+                    type: string
+                  description:
+                    type: string
+                  price:
+                    type: number
+                  category:
+                    type: string
+                  stock:
+                    type: number
+                  images:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                        publicId:
+                          type: string
+                  numOfReviews:
+                    type: number
+                  averageRating:
+                    type: number
+        "400":
+          description: Invalid product ID
+        "404":
+          description: Product not found
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error
+  /products/product/{productId}:
+    delete:
+      summary: Delete a product by ID (Admin only)
+      tags: [Products]
+      security:
+        - bearerAuth: []   # JWT required
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product to delete
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product deleted successfully"
+                  deletedProductId:
+                    type: string
+                    example: "68b88df8005abb866ac71cb3"  
+        "400":
+          description: Invalid product ID
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden (Not an admin)
+        "404":
+          description: Product not found
+        "500":
+          description: Internal server error
+    patch:
+      summary: Update a product (Admin only)
+      description: Allows an admin to update one or more fields of a product by its ID.
+      tags:
+        - Products
+      security:
+        - bearerAuth: []   # JWT required
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The ID of the product to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                category:
+                  type: string
+                stock:
+                  type: number
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product updated successfully
+                  updatedProduct:
+                    $ref: "#/components/schemas/Product"
+        "400":
+          description: Invalid product data
+        "401":
+          description: Unauthorized (No token provided)
+        "403":
+          description: Forbidden (Not an admin)
+        "404":
+          description: Product not found
+        "500":
+          description: Server error
+ 

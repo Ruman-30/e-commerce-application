@@ -69,7 +69,7 @@ export async function deleteProductController(req, res) {
 
     res.status(200).json({
       message: "Product and images deleted successfully",
-      product,
+      deletedProductId: productId
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
