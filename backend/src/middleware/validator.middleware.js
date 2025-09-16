@@ -77,7 +77,7 @@ export const getAllOrdersValidator = [
 ];
 
 export const validateGetSingleOrder = [
-  body("orderId")
+  param("orderId")
     .notEmpty()
     .withMessage("Order ID is required.")
     .custom((value) => {
@@ -85,7 +85,7 @@ export const validateGetSingleOrder = [
         throw new Error("Invalid Order ID format.");
       }
       return true;
-    }),
+    })
 ];
 
 // Middleware to handle validation errors

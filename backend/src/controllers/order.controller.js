@@ -109,10 +109,9 @@ export async function getOrderByUserController(req, res) {
     const userId = req.user._id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    // console.log("userId type:", typeof userId, userId);
 
     const order = await findOrdersByUser(userId, { page, limit });
-
+   
     if (!order || order.length === 0) {
       return res.status(400).json({
         message: "No order yet from this user.",
@@ -238,7 +237,7 @@ export async function cancelOrderController(req, res) {
 
 export async function findOrderByIdController(req, res) {
   try {
-    const { orderId } = req.body;
+    const { orderId } = req.params;
     const order = await findOrderById(orderId);
     if (!order) {
       return res.status(404).json({

@@ -145,4 +145,201 @@ paths:
                   error:
                     type: string
                     example: Internal server error
+  /cart/update:
+    put:
+      summary: Update product quantity in cart
+      description: Updates the quantity of a specific product in the user's cart.
+      tags: [Cart]
+      security:
+        - bearerAuth: []   # JWT required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - quantity
+              properties:
+                productId:
+                  type: string
+                  example: 64f7b2a5c9e77a12b8a5e4d2
+                quantity:
+                  type: integer
+                  minimum: 1
+                  example: 3
+      responses:
+        "200":
+          description: Cart updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cart updated successfully
+                  updatedCart:
+                    type: object
+                    example:
+                      userId: 64f7b2a5c9e77a12b8a5e4d1
+                      items:
+                        - productId: 64f7b2a5c9e77a12b8a5e4d2
+                          quantity: 3
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ProductId and quantity are required
+        "404":
+          description: Product or cart not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cart or product not found
+        "500":
+          description: Server error while updating cart
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Something went wrong
+                  error:
+                    type: string
+                    example: Internal server error
+  /cart/remove:
+    delete:
+      summary: Remove a product from the cart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []   # JWT required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+              properties:
+                productId:
+                  type: string
+                  description: ID of the product to remove from the cart
+                  example: "64b123abc456def789012345"
+      responses:
+        "200":
+          description: Product removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product removed successfully."
+                  updatedCart:
+                    type: object
+                    description: The updated cart after removal
+        "401":
+          description: Unauthorized - missing or invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"            
+        "404":
+          description: Product or Cart not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product not found!"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Something went wrong"
+                  error:
+                    type: string
+  /cart/clear:
+    delete:
+      summary: Clear all products from the cart
+      tags:
+        - Cart
+      security:
+        - bearerAuth: []   # JWT required
+      responses:
+        "200":
+          description: Cart cleared successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Cart cleared successfully."
+                  updatedCart:
+                    type: object
+                    description: The updated (now empty) cart
+        "401":
+          description: Unauthorized - missing or invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+        "404":
+          description: User ID missing or Cart not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      userIdMissing: "User ID is required."
+                      cartNotFound: "cart not found!"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Something went wrong"
+                  error:
+                    type: string
+    
 

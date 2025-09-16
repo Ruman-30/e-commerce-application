@@ -27,18 +27,18 @@ router.post(
   createOrderController
 );
 router.get(
-  "/",
-  validateGetSingleOrder,
-  handleValidationErrors,
-  authentication,
-  findOrderByIdController
-);
-router.get(
   "/all-orders",
   getAllOrdersValidator,
   handleValidationErrors,
   authentication,
   getOrderByUserController
+);
+router.get(
+  "/:orderId",
+  validateGetSingleOrder,
+  handleValidationErrors,
+  authentication,
+  findOrderByIdController
 );
 router.get(
   "/admin/orders",
