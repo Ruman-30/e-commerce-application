@@ -1,4 +1,4 @@
-🛒 E-Commerce Backend (Express + MongoDB + Redis + Razorpay)
+🛒 Urban Cart - E-Commerce Backend
 
 A production-ready backend API for a modern e-commerce platform, built with Node.js, Express, MongoDB, and Redis.
 It supports authentication, payments, product management, carts, orders, reviews, OAuth login, caching, and secure token refresh flow — all following industry best practices.
@@ -6,88 +6,88 @@ It supports authentication, payments, product management, carts, orders, reviews
 🚀 Features
 🔐 Authentication & Security
 
-JWT Access + Refresh tokens (with rotation & DB replacement).
+JWT Access + Refresh tokens (with rotation & DB replacement)
 
-Google OAuth 2.0 login.
+Google OAuth 2.0 login
 
-Forgot/Reset password flow using crypto tokens (15 min expiry).
+Forgot/Reset password flow using crypto tokens (15 min expiry)
 
-Secure cookies for refresh tokens.
+Secure cookies for refresh tokens
 
-Rate limiting with Redis + express-rate-limit.
+Rate limiting with Redis + express-rate-limit
 
-Input validation with express-validator.
+Input validation with express-validator
 
-Protected routes (role-based: admin vs user).
+Protected routes (role-based: admin vs user)
 
 👤 User Management
 
-Register & login with email/password.
+Register & login with email/password
 
-Google login support.
+Google login support
 
-Logout with refresh token invalidation.
+Logout with refresh token invalidation
 
-Forgot/reset password with secure email verification (SendGrid).
+Forgot/reset password with secure email verification (SendGrid)
 
 📦 Products
 
-Create, update, delete (admin only).
+Create, update, delete (admin only)
 
-Product image upload via Multer + Cloudinary.
+Product image upload via Multer + Cloudinary
 
-Pagination, filtering, and category-based search.
+Pagination, filtering, and category-based search
 
-MongoDB Atlas Search for full-text search.
+MongoDB Atlas Search for full-text search
 
-Redis caching for product lists & single products.
+Redis caching for product lists & single products
 
 🛒 Cart
 
-Persistent cart per user (1 active cart per user).
+Persistent cart per user (1 active cart per user)
 
-Add/update/remove items.
+Add/update/remove items
 
-Clear cart.
+Clear cart
 
-Auto-create cart when adding first item.
+Auto-create cart when adding first item
 
 📑 Orders
 
-Place order from cart (COD & Online).
+Place order from cart (COD & Online)
 
-Razorpay payment integration.
+Razorpay payment integration
 
-COD → instant email + stock deduction.
+COD → instant email + stock deduction
 
-Online payment → order confirmation after payment.
+Online payment → order confirmation after payment
 
-Order update/delete routes.
+Order update/delete routes
 
-Email notifications for order confirmation.
+Email notifications for order confirmation
 
 ⭐ Reviews
 
-Only users who purchased a product can review.
+Only users who purchased a product can review
 
-Rating + text stored.
+Rating + text stored
 
-Product average rating + count updated automatically.
+Product average rating + count updated automatically
 
 📧 Emails
 
-SendGrid for transactional emails (password reset, order confirmation).
+SendGrid for transactional emails (password reset, order confirmation)
 
 ⚡ Performance
 
-Redis caching for frequently accessed product data.
+Redis caching for frequently accessed product data
 
-Redis-backed rate limiting.
+Redis-backed rate limiting
 
-Efficient MongoDB queries with pagination, limit & skip.
+Efficient MongoDB queries with pagination, limit & skip
 
 🗂️ Project Structure
-.
+urban-cart/
 ├── config/         # Config files (env, keys, DB, etc.)
 ├── controllers/    # Route controllers
 ├── dao/            # Data access layer
@@ -106,14 +106,13 @@ This layered architecture separates concerns and makes the project scalable & pr
 
 Backend Framework: Express.js
 
-Database: MongoDB Atlas
- + Mongoose
+Database: MongoDB Atlas (Mongoose ODM)
 
 Cache / Rate Limiting: Redis
 
-Authentication: JWT (access & refresh tokens), Google OAuth
+Authentication: JWT (Access + Refresh Tokens), Google OAuth
 
-File Storage: Cloudinary
+File Storage: Cloudinary (via Multer)
 
 Emails: SendGrid
 
@@ -125,15 +124,15 @@ API Docs: Swagger/OpenAPI
 
 🔒 Security Best Practices
 
-HttpOnly, Secure cookies for refresh tokens.
+HttpOnly, Secure cookies for refresh tokens
 
-Passwords hashed with bcrypt.
+Passwords hashed with bcrypt
 
-Rate limiting & brute force protection.
+Rate limiting & brute force protection
 
-Input sanitization & validation.
+Input sanitization & validation
 
-Refresh token rotation (replaces old refresh token in DB).
+Refresh token rotation (replaces old refresh token in DB)
 
 📖 API Documentation
 
@@ -143,8 +142,8 @@ http://localhost:5000/docs
 
 🚀 Getting Started
 1️⃣ Clone repo
-git clone https://github.com/your-username/ecommerce-backend.git
-cd ecommerce-backend
+git clone https://github.com/your-username/urban-cart.git
+cd urban-cart
 
 2️⃣ Install dependencies
 npm install
@@ -173,21 +172,21 @@ npm run dev
 
 You can test APIs using:
 
-Postman (collection included in /docs).
+Postman (collection included in /docs)
 
-Swagger UI (/docs).
+Swagger UI (/docs)
 
 📌 Future Improvements
 
-Multi-device refresh token support (session tracking).
+Multi-device refresh token support (session tracking)
 
-Background jobs with Bull + Redis for email sending.
+Background jobs with Bull + Redis for email sending
 
-Webhooks for Razorpay payment verification.
+Webhooks for Razorpay payment verification
 
-Unit/integration testing with Jest + Supertest.
+Unit/integration testing with Jest + Supertest
 
-Role-based Access Control (RBAC).
+Role-based Access Control (RBAC)
 
 👨‍💻 Author
 
