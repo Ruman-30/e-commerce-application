@@ -9,9 +9,17 @@ import reviewRoutes from "./routes/review.route.js"
 import cookieParser from "cookie-parser"
 import swaggerSpec from "./config/swagger.js"
 import swaggerUi from "swagger-ui-express"
+import passport from "./config/passport.js"
 const app = express()
+import cors from "cors";
+app.use(cors({
+  origin: "*", // or specify your frontend domain instead of "*"
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+app.use(passport.initialize());
 app.use(cookieParser())
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/auth", userRoutes)

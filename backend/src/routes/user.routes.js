@@ -2,8 +2,11 @@ import express from "express";
 import {
   createUserRegisterController,
   createUserLoginController,
+  registerUserByGoogleController,
   forgotPasswordController,
-  resetPasswordController
+  resetPasswordController,
+  logoutController,
+  refreshTokenController
 } from "../controllers/user.controllers.js";
 import {
   validateRegister,
@@ -11,6 +14,7 @@ import {
   handleValidationErrors,
 } from "../middleware/validator.middleware.js";
 import { apiLimiter } from "../middleware/rateLimit.middleware.js";
+import passport from "passport";
 const router = express.Router();
 
 router.post(
@@ -28,6 +32,10 @@ router.post(
   createUserLoginController
 );
 
+router.get("/google", passport.authenticate("google", {scope: ["profile", "email"]}));
+router.get("/google/callback", passport.authenticate("google", {session: false}), registerUserByGoogleController);
 router.post("/forgot-password", apiLimiter, forgotPasswordController)
 router.post("/reset-password", apiLimiter, resetPasswordController)
+router.post("/refresh", refreshTokenController)
+router.post("/logout", apiLimiter, logoutController)
 export default router;

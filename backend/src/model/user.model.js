@@ -2,11 +2,15 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
     name: {
       type: String,
       required: [true, "Name is required"],
       trim: true,
-      unique: true
     },
     email: {
       type: String,
@@ -17,9 +21,11 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: function () {
+        return !this.googleId; // required only if googleId is not present
+      },
       minlength: [5, "Password must be at least 5 characters"],
-    //   select: false, // hide password in queries
+      //   select: false, // hide password in queries
     },
     role: {
       type: String,
@@ -33,13 +39,13 @@ const userSchema = new mongoose.Schema(
       postalCode: String,
       country: String,
     },
-     resetPasswordToken: String,
-     resetPasswordExpires: Date,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+    refreshToken: { type: String },
   },
   { timestamps: true }
 );
 
-
 const userModel = mongoose.model("User", userSchema);
 
-export default userModel
+export default userModel;

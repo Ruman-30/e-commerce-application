@@ -5,9 +5,8 @@ import { FindOneUser } from "../dao/user.dao.js";
 export async function authentication(req, res, next) {
   try {
     let token;
-
-    if (req.cookies?.token) {
-      token = req.cookies.token;
+    if (req.cookies?.accessToken) {
+      token = req.cookies.accessToken;
     }
 
     else if (req.headers.authorization?.startsWith("Bearer ")) {
@@ -20,7 +19,7 @@ export async function authentication(req, res, next) {
       });
     }
 
-    const decoded = jwt.verify(token, config.JWT_SECRET);
+    const decoded = jwt.verify(token, config.JWT_ACCESS_SECRET);
     const user = await FindOneUser({ _id: decoded.userId });
     req.user = user;
     next();

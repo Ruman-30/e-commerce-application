@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { razorpay } from "../config/config.js";
-import { log } from "console";
 
 export async function createRazorpayOrder(order) {
   const options = {

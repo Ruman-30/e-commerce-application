@@ -12,7 +12,7 @@ import {
 const router = express.Router();
 
 router.post(
-  "/products/:productId/review",
+  "/product/:productId",
   authentication,
   validateCreateReview,
   handleValidationErrors,

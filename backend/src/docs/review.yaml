@@ -1,0 +1,170 @@
+paths:
+  /review/product/{productId}:
+    post:
+      summary: Create or update a review for a product
+      tags: [Reviews]
+      security:
+        - bearerAuth: []   # Requires JWT token
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: string
+          description: ID of the product to review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+                - comment
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+                comment:
+                  type: string
+                  example: "Amazing product, really satisfied!"
+      responses:
+        "201":
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Review created successfully.
+                  review:
+                    $ref: "#/components/schemas/Review"
+        "200":
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Review updated successfully.
+        "403":
+          description: Forbidden – user has not purchased the product
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You can only review purchased products
+        "401":
+          description: Unauthorized – JWT missing or invalid
+        "500":
+          description: Internal server error
+
+  /review/product/{productId}/delete:
+    delete:
+      summary: Delete a review for a product
+      tags: [Reviews]
+      security:
+        - bearerAuth: []   # Requires JWT token
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: string
+          description: ID of the product whose review is to be deleted
+      responses:
+        "200":
+          description: Review deleted successfully
+        "404":
+          description: Review not found for this product
+        "401":
+          description: Unauthorized – JWT missing or invalid
+        "500":
+          description: Internal server error
+
+  /review/product/{productId}/reviews:
+    get:
+      summary: Get all reviews for a product
+      tags: [Reviews]
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 20
+      responses:
+        "200":
+          description: Reviews fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: All product review fetched successfully.
+                  review:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Review"
+                  totalReview:
+                    type: integer
+                    example: 120
+                  totalPage:
+                    type: integer
+                    example: 6
+        "404":
+          description: Product not found
+        "500":
+          description: Internal server error while fetching reviews
+
+components:
+  schemas:
+    Review:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 68c96855bf2d4f74ee79603d
+        user:
+          type: string
+          example: 689c6ebcaded42b334aa755d
+        product:
+          type: string
+          example: 68a375a0f9f1dc757ca46655
+        rating:
+          type: integer
+          example: 5
+        comment:
+          type: string
+          example: Amazing product, really satisfied!
+        createdAt:
+          type: string
+          format: date-time
+          example: 2025-09-16T13:38:29.380Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2025-09-16T13:38:29.380Z
+        __v:
+          type: integer
+          example: 0

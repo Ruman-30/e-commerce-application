@@ -1,0 +1,133 @@
+paths:
+  /admin/register:
+    post:
+      summary: Register a new admin (Admin only)
+      tags: [Admin]
+      security:
+        - bearerAuth: []   # JWT required
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+                - address
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  example: admin@example.com
+                password:
+                  type: string
+                  format: password
+                  example: StrongPassword123!
+                address:
+                  type: object
+                  required:
+                    - street
+                    - city
+                    - state
+                    - postalCode
+                    - country
+                  properties:
+                    street:
+                      type: string
+                      example: 123 Main St
+                    city:
+                      type: string
+                      example: New York
+                    state:
+                      type: string
+                      example: NY
+                    postalCode:
+                      type: string
+                      example: 10001
+                    country:
+                      type: string
+                      example: USA
+      responses:
+        "201":
+          description: Admin registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin registered successfully.
+                  admin:
+                    type: object
+                    properties:
+                      userId:
+                        type: string
+                        example: 64f2a7b5c1a23a001f5d9b20
+                      name:
+                        type: string
+                        example: John Doe
+                      email:
+                        type: string
+                        example: admin@example.com
+                      address:
+                        type: object
+                        properties:
+                          street:
+                            type: string
+                            example: 123 Main St
+                          city:
+                            type: string
+                            example: New York
+                          state:
+                            type: string
+                            example: NY
+                          postalCode:
+                            type: string
+                            example: 10001
+                          country:
+                            type: string
+                            example: USA
+                      role:
+                        type: string
+                        example: admin
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "401":
+          description: Admin already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin already exist.
+        "403":
+          description: Forbidden (Access denied, admin only)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Access denied. Admins only.            
+        "500":
+          description: Server error while registering admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Server Error
+                  error:
+                    type: string
