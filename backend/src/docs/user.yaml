@@ -122,3 +122,162 @@ paths:
                             type: string
         "401":
           description: Invalid credentials
+  /auth/forgot-password:
+    post:
+      summary: Request a password reset link
+      description: >
+        Sends a password reset email to the user with a secure reset token.
+        The reset token is valid for 15 minutes and must be used to reset the password.
+      tags: [Users]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        "200":
+          description: Password reset email successfully sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset email sent.
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found!
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Something went wrong
+                  error:
+                    type: string
+/auth/reset-password:
+  post:
+    summary: Reset user password
+    description: >
+      Resets the user's password using a valid reset token.  
+      The reset token must have been generated from the **Forgot Password** flow and is valid for 15 minutes.
+    tags: [Users]
+    security: []  
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - token
+              - newPassword
+            properties:
+              token:
+                type: string
+                description: Password reset token sent to the user's email.
+                example: "d8f1a8c9f2e3b4a1c7d9"
+              newPassword:
+                type: string
+                format: password
+                description: New password to be set for the user.
+                example: "MyNewStrongP@ssw0rd!"
+    responses:
+      "200":
+        description: Password successfully reset
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Password reset successfully.
+      "400":
+        description: Invalid or expired reset token
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Invalid or expired token.
+      "500":
+        description: Server error while resetting password
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Something went wrong
+                error:
+                  type: string
+/auth/logout:
+  post:
+    summary: Logout user
+    description: >
+      Logs out the currently authenticated user by:
+        - Removing the refresh token from the database
+        - Clearing the refresh token cookie  
+      
+      Requires a valid **access token** in the `Authorization` header.
+    tags: [Users]
+    security:
+      - bearerAuth: []   # Requires JWT access token
+    responses:
+      "200":
+        description: User logged out successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Logged out successfully
+      "401":
+        description: Unauthorized — missing or invalid access token
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Unauthorized
+      "500":
+        description: Server error while logging out
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Something went wrong
+                error:
+                  type: string

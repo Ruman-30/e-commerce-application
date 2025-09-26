@@ -13,9 +13,11 @@ import passport from "./config/passport.js"
 const app = express()
 import cors from "cors";
 app.use(cors({
-  origin: "*", // or specify your frontend domain instead of "*"
+  origin: "http://localhost:5173", // or specify your frontend domain instead of "*"
   methods: ["GET", "POST", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true // allow cookies to be sent
+
 }));
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))

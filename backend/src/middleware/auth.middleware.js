@@ -5,17 +5,20 @@ import { FindOneUser } from "../dao/user.dao.js";
 export async function authentication(req, res, next) {
   try {
     let token;
+   
     if (req.cookies?.accessToken) {
       token = req.cookies.accessToken;
+    } else if (
+      req.headers.authorization &&
+      req.headers.authorization?.startsWith("Bearer ")
+    ) {
+      token = req.headers.authorization.split(" ")[1].trim();
     }
-
-    else if (req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
+    //  console.log("Authorization header:", req.headers.authorization);
+    //  console.log("Token after split:", token);
     if (!token) {
       return res.status(401).json({
-        message: "Unauthorized user",
+        message: "Unauthorized user, no token provided",
       });
     }
 
@@ -26,6 +29,9 @@ export async function authentication(req, res, next) {
   } catch (error) {
     return res
       .status(401)
-      .json({ message: "Invalid or expired token, please login first." });
+      .json({
+        message: "Invalid or expired token, please login first.",
+        error: error.message,
+      });
   }
 }

@@ -13,7 +13,7 @@ paths:
           description: Filter products by category
           schema:
             type: string
-            example: "Electronics"
+            example: "Mobiles"
 
         - name: minPrice
           in: query
@@ -38,7 +38,7 @@ paths:
           schema:
             type: integer
             default: 1
-            example: 2
+            example: 1
 
         - name: limit
           in: query
@@ -47,7 +47,7 @@ paths:
           schema:
             type: integer
             default: 10
-            example: 20
+            example: 10
 
         - name: sort
           in: query
@@ -72,7 +72,7 @@ paths:
           description: Search products by name or description
           schema:
             type: string
-            example: "wireless mouse"
+            example: "iphone"
 
       responses:
         "200":

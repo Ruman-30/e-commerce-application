@@ -19,20 +19,7 @@ export const validateRegister = [
     .notEmpty()
     .withMessage("Password is required.")
     .isLength({ min: 6 })
-    .withMessage("Password must be at least 6 characters long."),
-
-  body("address.street").notEmpty().withMessage("Street is required."),
-  body("address.city").notEmpty().withMessage("City is required."),
-  body("address.state").notEmpty().withMessage("State is required."),
-  body("address.country").notEmpty().withMessage("Country is required."),
-
-  body("address.postalCode")
-    .notEmpty()
-    .withMessage("Postal code is required.")
-    .isNumeric()
-    .withMessage("Postal code must contain only numbers.")
-    .isLength({ min: 6, max: 6 })
-    .withMessage("Postal code must be exactly 6 digits."),
+    .withMessage("Password must be at least 6 characters long.")
 ];
 
 // LOGIN VALIDATOR

@@ -136,7 +136,7 @@ export async function removeProductFromCartController(req, res) {
     if (!product) {
       return res.status(404).json({ message: "Product not found!" });
     }
-    const updatedCart = await removeProductFromCart(userId, productId);
+    const updatedCart = await removeProductFromCart(userId, product._id);
 
     if (!updatedCart) {
       return res.status(404).json({ message: "Cart not found!" });
