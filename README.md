@@ -124,7 +124,7 @@ Refresh token rotation (replaces old refresh token in DB)
 
 Swagger docs available at:
 
-http://localhost:5000/docs
+http://localhost:3000/docs
 
 🚀 Getting Started
 1️⃣ Clone repo
