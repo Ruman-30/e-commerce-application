@@ -138,7 +138,7 @@ export const validateCreateProduct = [
   
   body("description")
     .optional()
-    .isLength({ max: 1000 }).withMessage("Description cannot exceed 1000 characters."),
+    .isLength({ max: 5000 }).withMessage("Description cannot exceed 1000 characters."),
 
   body("price")
     .notEmpty().withMessage("Price is required.")

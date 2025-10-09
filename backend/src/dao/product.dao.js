@@ -43,40 +43,66 @@ export async function getAllProducts({ filter, sort, skip, limit, search }) {
           text: {
             query: search,
             path: ["name", "description"],
-            fuzzy: { maxEdits: 2 },
+            // fuzzy: { maxEdits: 2 },
           },
         },
       },
-
       {
         $set: {
           score: { $meta: "searchScore" },
         },
       },
+      ...(Object.keys(filter).length ? [{ $match: filter }] : []),
 
-      ...(Object.keys(filter).length > 0 ? [{ $match: filter }] : []),
-      { $sort: {score: -1}},
+      // Make sure fields exist for sorting
+      {
+        $addFields: {
+          sortPrice: "$price",
+          sortCreatedAt: "$createdAt",
+        },
+      },
+
+      // Sort by score first, then user-specified field
+      {
+        $sort: {
+          score: -1,
+          ...(sort.sort === "price" ? { sortPrice: sort.price } : {}),
+          ...(sort.sort === "createdAt" ? { sortCreatedAt: sort.createdAt } : {}),
+        },
+      },
+
       { $skip: skip },
       { $limit: limit },
+
       {
         $project: {
           name: 1,
           price: 1,
           "images.url": 1,
           category: 1,
+          subCategory: 1,
           score: 1,
+          description: 1,
+          averageRating: 1,
+          numOfReviews: 1,
         },
       },
     ];
+
     return await productModel.aggregate(pipeline);
   }
+
+  // Normal fetch without search
   return await productModel
     .find(filter)
-    .sort(sort)
+    .sort(Object.keys(sort).length ? sort : { createdAt: -1 })
     .skip(skip)
     .limit(limit)
-    .select("name price images.url category");
+    .select(
+      "name price images.url category subCategory description averageRating numOfReviews"
+    );
 }
+
 
 export async function countProduct({ filter, search }) {
   if (search) {

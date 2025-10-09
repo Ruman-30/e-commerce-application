@@ -50,7 +50,7 @@ export async function getCartController(req, res) {
     const cart = await findCartByUser(userId);
 
     if (!cart || cart.items.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "Cart is empty",
         items: [],
         totalAmount: 0,

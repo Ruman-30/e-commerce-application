@@ -85,11 +85,17 @@ export async function deleteReview({ userId, productId }) {
 }
 
 export async function hasPurchased({ userId, productId }) {
-  return await orderModel.findOne({
+  const order = await orderModel.findOne({
     user: userId,
     "items.product": productId,
+    status: "Delivered",
+    // "payment.paymentStatus": "Paid", // optional if you want to check paid status
   });
+
+  // Convert the result to boolean
+  return !!order;
 }
+
 
 export async function getAllReviews({productId, limit, skip}){
   return await reviewModel

@@ -1,13 +1,14 @@
+// utils/lenis.js
 import Lenis from "@studio-freight/lenis";
 
-let lenis;
+export let lenis;
 
 export function initLenis() {
   lenis = new Lenis({
-    duration: 1, // scroll speed
+    duration: 1,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     smooth: true,
-    smoothTouch: false, // disable smooth on touch devices if you want
+    smoothTouch: false,
   });
 
   function raf(time) {
@@ -23,4 +24,13 @@ export function destroyLenis() {
     lenis.destroy();
     lenis = null;
   }
+}
+
+// helper functions
+export function pauseLenis() {
+  if (lenis) lenis.stop(); // pauses Lenis
+}
+
+export function resumeLenis() {
+  if (lenis) lenis.start(); // resumes Lenis
 }

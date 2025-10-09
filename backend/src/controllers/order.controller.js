@@ -30,7 +30,7 @@ export async function createOrderController(req, res) {
 
     const cart = await findCartByUser(userId);
     if (!cart || cart.items.length === 0) {
-      return res.status(404).json({ message: "Cart is empty" });
+      return res.status(200).json({ message: "Cart is empty" });
     }
 
     const orderItems = await Promise.all(
@@ -92,7 +92,7 @@ export async function createOrderController(req, res) {
     await updateOrderPayment(newOrder._id, {
       razorpay_order_id: razorpayOrder.id,
     });
-    
+
     res.status(200).json({
       message: "Razorpay order created. Complete payment to confirm.",
       order: newOrder,
@@ -103,7 +103,7 @@ export async function createOrderController(req, res) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
-  
+
 export async function getOrderByUserController(req, res) {
   try {
     const userId = req.user._id;
@@ -111,7 +111,7 @@ export async function getOrderByUserController(req, res) {
     const limit = parseInt(req.query.limit) || 10;
 
     const order = await findOrdersByUser(userId, { page, limit });
-   
+
     if (!order || order.length === 0) {
       return res.status(400).json({
         message: "No order yet from this user.",
@@ -122,6 +122,8 @@ export async function getOrderByUserController(req, res) {
       orderId: order._id,
       totalAmount: order.totalAmount,
       createdAt: order.createdAt,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus, 
       shippingAddress: {
         fullName: order.shippingAddress.fullName,
         city: order.shippingAddress.city,

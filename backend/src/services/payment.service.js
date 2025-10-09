@@ -3,7 +3,7 @@ import { razorpay } from "../config/config.js";
 
 export async function createRazorpayOrder(order) {
   const options = {
-    amount: Math.round(order.totalAmount * 100),
+    amount: Math.min(Math.round(order.totalAmount * 100), 5000000),
     currency: "INR",
     receipt: order._id.toString(), 
   };

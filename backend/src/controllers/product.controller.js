@@ -13,10 +13,11 @@ import {
 } from "../dao/product.dao.js";
 import redis from "../config/redis.js";
 import { clearProductCache } from "../utils/cacheUtils.js";
+import { hasPurchased } from "../dao/review.dao.js";
 
 export async function createProductController(req, res) {
   try {
-    const { name, description, price, category, stock } = req.body;
+    const { name, description, price, category, subCategory, stock } = req.body;
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "At least one image is required" });
@@ -38,6 +39,7 @@ export async function createProductController(req, res) {
       description,
       price,
       category,
+      subCategory,
       stock,
       images,
     });
@@ -69,7 +71,7 @@ export async function deleteProductController(req, res) {
 
     res.status(200).json({
       message: "Product and images deleted successfully",
-      deletedProductId: productId
+      deletedProductId: productId,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -79,7 +81,7 @@ export async function deleteProductController(req, res) {
 export async function updateProductController(req, res) {
   try {
     const { productid } = req.params;
-    const { name, description, price, category, stock } = req.body;
+    const { name, description, price, category, subCategory, stock } = req.body;
     const product = await findProductById(productid);
 
     if (!product) {
@@ -88,7 +90,14 @@ export async function updateProductController(req, res) {
       });
     }
 
-    let updatedData = { name, description, price, category, stock };
+    let updatedData = {
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      stock,
+    };
     if (req.files && req.files.length > 0) {
       const deletePromise = product.images.map((img) =>
         deleteFromCloudinary(img.publicId)
@@ -129,6 +138,10 @@ export async function getAllProductsController(req, res) {
       filter.category = req.query.category;
     }
 
+    if (req.query.subCategory && typeof req.query.subCategory === "string") {
+      filter.subCategory = req.query.subCategory;
+    }
+
     if (req.query.minPrice !== undefined || req.query.maxPrice !== undefined) {
       let minPrice =
         req.query.minPrice !== undefined ? Number(req.query.minPrice) : 0;
@@ -150,9 +163,12 @@ export async function getAllProductsController(req, res) {
       filter.price = { $gte: minPrice, $lte: maxPrice };
     }
 
-    let sort = { createdAt: -1 };
-    if (req.query.sort) {
-      sort = { [req.query.sort]: req.query.order === "desc" ? -1 : 1 };
+    // In controller
+    const allowedSortFields = ["price", "createdAt"]; // allowed fields for sorting
+    let sort = {};
+
+    if (req.query.sort && allowedSortFields.includes(req.query.sort)) {
+      sort[req.query.sort] = req.query.order === "desc" ? -1 : 1;
     }
 
     const cacheKey = `products:list:${JSON.stringify({
@@ -160,20 +176,26 @@ export async function getAllProductsController(req, res) {
       sort,
       limit,
       page,
-      search: req.query.search || ""  
+      search: req.query.search || "",
     })}`;
 
     const cached = await redis.get(cacheKey);
     if (cached) {
       console.log("Serving products from Redis cache");
-      return res.status(200).json({
-        message: "Product fetched successfully (from cache).",
-        products: JSON.parse(cached),
-      });
+      return res.status(200).json(JSON.parse(cached)); // ✅ return same shape
     }
-    const products = await getAllProducts({filter, sort, skip, limit, search: req.query.search});
-    const totalProducts = await countProduct({filter, search: req.query.search});
-
+    const products = await getAllProducts({
+      filter,
+      sort,
+      skip,
+      limit,
+      search: req.query.search,
+    });
+    const totalProducts = await countProduct({
+      filter,
+      search: req.query.search,
+    });
+    
     const response = {
       message: "All products are fetched",
       currentPage: page,
@@ -182,7 +204,7 @@ export async function getAllProductsController(req, res) {
       products,
     };
 
-    await redis.set(cacheKey, JSON.stringify(response), "EX", 1000);
+    await redis.set(cacheKey, JSON.stringify(response), "EX", 300);
     console.log("📦 Stored in cache:", cacheKey);
     res.status(200).json(response);
   } catch (error) {
@@ -197,12 +219,14 @@ export async function getProductByIdController(req, res) {
   try {
     const { productid } = req.params;
     const cacheKey = `products:${productid}`;
-    const cashed = await redis.get(cacheKey);
-    if (cashed) {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
       console.log("serving from redis cache.");
+      const { product, hasPurchased } = JSON.parse(cached);
       return res.status(200).json({
         message: "Product fetched successfully (from cache).",
-        product: JSON.parse(cashed),
+        product, // no nesting
+        hasPurchased, // directly here
       });
     }
     const product = await getProductById(productid);
@@ -210,10 +234,29 @@ export async function getProductByIdController(req, res) {
       return res.status(404).json({ message: "Product not found!" });
     }
 
-    await redis.set(cacheKey, JSON.stringify(product), "EX", 1000);
+    let purchased = false;
+    if (req.user) {
+      try {
+        purchased = !!(await hasPurchased({
+          userId: req.user,
+          productId: product._id,
+        }));
+      } catch (err) {
+        console.error("Failed to check purchase:", err);
+        purchased = false;
+      }
+    }
+
+    const cacheValue = JSON.stringify({
+      product,
+      hasPurchased: purchased,
+    });
+
+    await redis.set(cacheKey, cacheValue, "EX", 300);
     res.status(200).json({
       message: "Product fetched successfully.",
       product,
+      hasPurchased: purchased,
     });
   } catch (error) {
     res

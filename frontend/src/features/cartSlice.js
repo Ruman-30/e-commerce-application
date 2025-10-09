@@ -1,63 +1,91 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import api from "../api/axios";
+
+// Fetch cart with populated products
+export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
+  const res = await api.get("/cart", { withCredentials: true });
+  return res.data.items || [];
+});
+
+// Add item to cart
+export const addItemToCart = createAsyncThunk(
+  "cart/addItemToCart",
+  async (item, { dispatch }) => {
+    await api.post("/cart/add", item, { withCredentials: true });
+    // fetch updated cart with populated products
+    const updatedCart = await dispatch(fetchCart()).unwrap();
+    return updatedCart;
+  }
+);
+
+// Update quantity
+export const updateItemQuantity = createAsyncThunk(
+  "cart/updateItemQuantity",
+  async ({ productId, quantity }, { dispatch }) => {
+    await api.put("/cart/update", { productId, quantity }, { withCredentials: true });
+    const updatedCart = await dispatch(fetchCart()).unwrap();
+    return updatedCart;
+  }
+);
+
+// Remove item
+  export const removeItemFromCart = createAsyncThunk(
+    "cart/removeItemFromCart",
+    async (productId, { dispatch }) => {
+      await api.delete("/cart/remove", { data: { productId }, withCredentials: true });
+      const updatedCart = await dispatch(fetchCart()).unwrap();
+      return updatedCart;
+    }
+  );
+
+// Clear cart
+export const clearCartBackend = createAsyncThunk(
+  "cart/clearCartBackend",
+  async (_, { dispatch }) => {
+    await api.delete("/cart/clear", { withCredentials: true });
+    return [];
+  }
+);
 
 const initialState = {
-  items: [],       // array of cart items
-  totalQuantity: 0, // total number of items
-  totalPrice: 0,    // total price of all items
+  items: [],
+  totalQuantity: 0,
+  totalPrice: 0,
+  status: "idle",
 };
 
 const cartSlice = createSlice({
   name: "cart",
   initialState,
-  reducers: {
-    // Add item to cart
-    addItem: (state, action) => {
-      const item = action.payload; // { _id, name, price, quantity }
-      const existingItem = state.items.find(i => i._id === item._id);
+  reducers: {},
+  extraReducers: (builder) => {
+    const recalcTotals = (state) => {
+      state.totalQuantity = state.items.reduce((sum, i) => sum + i.quantity, 0);
+      state.totalPrice = state.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    };
 
-      if (existingItem) {
-        existingItem.quantity += item.quantity; // increase quantity
-      } else {
-        state.items.push(item); // add new item
-      }
-
-      state.totalQuantity += item.quantity;
-      state.totalPrice += item.price * item.quantity;
-    },
-
-    // Remove item from cart
-    removeItem: (state, action) => {
-      const id = action.payload; // product _id
-      const existingItem = state.items.find(i => i._id === id);
-
-      if (existingItem) {
-        state.totalQuantity -= existingItem.quantity;
-        state.totalPrice -= existingItem.price * existingItem.quantity;
-        state.items = state.items.filter(i => i._id !== id);
-      }
-    },
-
-    // Update quantity of a cart item
-    updateItemQuantity: (state, action) => {
-      const { _id, quantity } = action.payload;
-      const item = state.items.find(i => i._id === _id);
-
-      if (item) {
-        // update totals
-        state.totalQuantity += quantity - item.quantity;
-        state.totalPrice += (quantity - item.quantity) * item.price;
-        item.quantity = quantity; // update quantity
-      }
-    },
-
-    // Clear entire cart
-    clearCart: (state) => {
-      state.items = [];
-      state.totalQuantity = 0;
-      state.totalPrice = 0;
-    },
+    builder
+      .addCase(fetchCart.fulfilled, (state, action) => {
+        state.items = action.payload;
+        recalcTotals(state);
+      })
+      .addCase(addItemToCart.fulfilled, (state, action) => {
+        state.items = action.payload;
+        recalcTotals(state);
+      })
+      .addCase(updateItemQuantity.fulfilled, (state, action) => {
+        state.items = action.payload;
+        recalcTotals(state);
+      })
+      .addCase(removeItemFromCart.fulfilled, (state, action) => {
+        state.items = action.payload;
+        recalcTotals(state);
+      })
+      .addCase(clearCartBackend.fulfilled, (state) => {
+        state.items = [];
+        recalcTotals(state);
+      });
   },
 });
 
-export const { addItem, removeItem, updateItemQuantity, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

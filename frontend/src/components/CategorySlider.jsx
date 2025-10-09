@@ -5,23 +5,24 @@ import { useNavigate } from "react-router-dom";
 import { Navigation } from "swiper/modules";
 
 const categories = [
-  { name: "Electronics", img: "/public/images/category/electronics.webp" },
-  { name: "Clothing", img: "/public/images/category/clothing.webp" },
-  { name: "Home Appliances", img: "/public/images/category/appliances.jpg" },
-  { name: "Shoes", img: "/public/images/category/shoes.webp" },
-  { name: "Accessories", img: "/public/images/category/accessories.webp" },
+  { name: "Electronics", img: "/images/category/electronics.webp" },
+  { name: "Clothing", img: "/images/category/clothing.webp" },
+  { name: "Home Appliances", img: "/images/category/appliances.jpg" },
+  { name: "Shoes", img: "/images/category/shoes.webp" },
+  { name: "Accessories", img: "/images/category/accessories.webp" },
 
-  { name: "Books", img: "/public/images/category/books.jpg" },
-  { name: "Beauty", img: "/public/images/category/beauty_.jpg" },
-  { name: "Toys", img: "/public/images/category/toys.webp" },
-  { name: "Sports", img: "/public/images/category/sports.webp" },
-  { name: "Groceries", img: "/public/images/category/groceries.jpg" },
+  { name: "Books", img: "/images/category/books.jpg" },
+  { name: "Beauty", img: "/images/category/beauty_.jpg" },
+  { name: "Toys", img: "/images/category/toys.webp" },
+  { name: "Sports", img: "/images/category/sports.webp" },
+  { name: "Furniture", img: "/images/category/furniture.jpg" },
 ];
 
 export default function CategorySlider() {
   const navigate = useNavigate();
    const handleCategoryClick = (category) => {
      // Redirect user to products page with category filter
+     
      navigate(`/products?category=${encodeURIComponent(category)}`);
    };
   return (

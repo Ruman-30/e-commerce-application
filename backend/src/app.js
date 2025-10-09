@@ -14,7 +14,7 @@ const app = express()
 import cors from "cors";
 app.use(cors({
   origin: "http://localhost:5173", // or specify your frontend domain instead of "*"
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true // allow cookies to be sent
 

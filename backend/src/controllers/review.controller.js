@@ -81,7 +81,7 @@ export async function getAllReviewsController(req, res){
       message: "Product not found!"
     })
    }
-    const cacheKey = `reviews:list:${JSON.stringify({
+    const cacheKey = `reviews:list:${productId}:${JSON.stringify({
       limit,
       page
     })}`
@@ -89,10 +89,7 @@ export async function getAllReviewsController(req, res){
     const cached = await redis.get(cacheKey)
     if(cached){
       console.log("Serving reviews from redis cache");
-      return res.status(200).json({
-        message: "Reviews fetched successfully from (cache)",
-        reviews: JSON.parse(cached)
-      })
+      return res.status(200).json(JSON.parse(cached))
       
     }
    const review = await getAllReviews({productId, limit, skip})
@@ -104,7 +101,7 @@ export async function getAllReviewsController(req, res){
      totalReview,
      totalPage: Math.ceil(totalReview / limit)
    }
-   await redis.set(cacheKey, JSON.stringify(response), "EX", 1000)
+   await redis.set(cacheKey, JSON.stringify(response), "EX", 300)
    console.log("📦 Stored in cache:", cacheKey);
    res.status(200).json(response)
 
