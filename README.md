@@ -177,4 +177,4 @@ Role-based Access Control (RBAC)
 👨‍💻 Author
 
 Ruman Khan
-Backend Developer | Node.js | MongoDB | Express | Redis | Cloud-native APIs
+FullStack Web Developer | Node.js | MongoDB | Express | Redis | Cloud-native APIs
