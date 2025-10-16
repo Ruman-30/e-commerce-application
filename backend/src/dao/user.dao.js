@@ -49,3 +49,57 @@ export async function clearRefreshToken(token){
  await user.save()
  return user
 }
+
+export async function searchUsers({ search, limit = 10, skip = 0 }) {
+  const pipeline = [
+    {
+      $search: {
+        index: "userSearch", 
+        text: {
+          query: search,
+          path: ["name", "email", "role"],
+          fuzzy: { maxEdits: 2 },
+        },
+      },
+    },
+    { $skip: skip },
+    { $limit: limit },
+    { $project: { password: 0, refreshToken: 0 } },
+  ];
+
+  return await userModel.aggregate(pipeline);
+}
+
+// 🔹 Count total users matching search query
+export async function countSearchUsers(search) {
+  const result = await userModel.aggregate([
+    {
+      $search: {
+        index: "userSearch",
+        text: {
+          query: search,
+          path: ["name", "email", "role"],
+          fuzzy: { maxEdits: 2 },
+        },
+      },
+    },
+    { $count: "total" },
+  ]);
+
+  return result[0]?.total || 0;
+}
+
+// 🔹 Normal pagination (no search)
+export async function getAllUsers({ limit = 10, skip = 0, sort } = {}) {
+  return await userModel
+    .find()
+    .limit(limit)
+    .skip(skip)
+    .sort(sort)
+    .select("-password -refreshToken");
+}
+
+// 🔹 Count total users (no search)
+export async function countUsers() {
+  return await userModel.countDocuments();
+}

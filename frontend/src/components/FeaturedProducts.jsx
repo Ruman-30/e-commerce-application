@@ -1,60 +1,95 @@
-import React from 'react'
-
-
-const featuredProducts = [
-  {
-    name: "AirPods Max",
-    price: "₹59,900",
-    img: "https://m.media-amazon.com/images/I/71RJCexaxiL._UF1000,1000_QL80_.jpg",
-    rating: 4.5,
-  },
-  {
-    name: "I phone 17 Pro max",
-    price: "₹1,49,999",
-    img: "https://media-ik.croma.com/prod/https://media.tatacroma.com/Croma%20Assets/Communication/Mobiles/Images/317434_0_iUBrKWxfg.png?updatedAt=1757529567127",
-    rating: 4.8,
-  },
-  {
-    name: "Macbook Pro 14",
-    price: "₹2,29,999",
-    img: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mbp-14-digitalmat-gallery-1-202410?wid=728&hei=666&fmt=png-alpha&.v=dmVFbEEyUXJ6Q0hEd1FjMFY3bE5FczNWK01TMHBhR0pZcm42OHQ2ODBjVVZYRUFzTnU5dXpMeUpXTHdIdkp5VDRob044alBIMUhjRGJwTW1yRE1oUG9oQ20zUjdkYWFQM0VDcG9EZ0J2dDMrNmVjbmk5c1V4VVk2VEt3TGcxekg",
-    rating: 4.7,
-  },
-  {
-    name: "Samsung 4K TV",
-    price: "₹1,19,999",
-    img: "https://goodluckafrica.com/wp-content/uploads/2024/10/UA98DU9000-frt.jpg",
-    rating: 4.6,
-  },
-];
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { motion } from "framer-motion";
+import api from "../api/axios"; // ✅ your axios instance
+import { addItemToCart } from "../features/cartSlice"; // ✅ adjust path if needed
+import { toast } from "react-toastify";
 
 const FeaturedProducts = () => {
+  const [featured, setFeatured] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const res = await api.get("/products?sort=createdAt&order=desc&limit=4");
+        setFeatured(res.data.products || []);
+      } catch (err) {
+        console.error("Error fetching featured products:", err);
+        toast.error("Failed to load featured products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
+
+  const handleAddToCart = async (product) => {
+    const item = {
+      productId: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images?.[0]?.url || product.images?.[0],
+      quantity: 1,
+    };
+
+    try {
+      await dispatch(addItemToCart(item)).unwrap();
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      toast.error("Failed to add item to cart");
+      console.error(error);
+    }
+  };
+
   return (
     <section className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
+      <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
+
+      {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <div
-              key={product.name}
-              className="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden relative"
+          {Array(4)
+            .fill(0)
+            .map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-lg shadow-md h-72 animate-pulse"
+              ></div>
+            ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          {featured.map((product) => (
+            <motion.div
+              key={product._id}
+              whileHover={{ scale: 1.03 }}
+              className="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden cursor-pointer flex flex-col justify-between"
             >
               <img
-                src={product.img}
+                src={product.images?.[0]?.url || "/placeholder.png"}
                 alt={product.name}
-                className="w-full h-58 object-cover transition-transform duration-300 hover:scale-105"
+                className=" h-60 object-top object-cover transition-transform duration-300 hover:scale-105"
               />
               <div className="p-4">
-                <h3 className="font-semibold">{product.name}</h3>
-                <p className="text-yellow-400 font-bold">{product.price}</p>
-                <button className="mt-2 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-lg">
+                <h3 className="font-semibold line-clamp-1">{product.name}</h3>
+                <p className="text-blue-600 font-bold mt-1">
+                  <span className="text-black">₹</span>{product.price.toLocaleString("en-IN")}
+                </p>
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="mt-3 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-lg transition"
+                >
                   Add to Cart
                 </button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </section>
-  )
-}
+      )}
+    </section>
+  );
+};
 
-export default FeaturedProducts
+export default FeaturedProducts;

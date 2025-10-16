@@ -63,7 +63,7 @@ export default function Appliances() {
                 <p className="font-medium">{trimName(cat.name)}</p>
                </div>
                  <p className="font-semibold text-blue-600 mb-4">
-                    ₹{cat.price}
+                    <span className="text-black">₹</span>{cat.price}
                   </p>
               </div>
             </SwiperSlide>

@@ -61,7 +61,7 @@ export default function BestDeals() {
                   <p className="font-medium">{cat.name}</p>
                  </div>
                   <p className="font-semibold text-blue-600 mb-4">
-                    ₹{cat.price}
+                    <span className="text-black">₹</span>{cat.price}
                   </p>
                 </div>
               ))}
@@ -86,7 +86,7 @@ export default function BestDeals() {
                   <p className="font-medium">{cat.name}</p>
                  </div>
                   <p className="font-semibold text-blue-600 mb-4">
-                    ₹{cat.price}
+                    <span className="text-black">₹</span>{cat.price}
                   </p>
                 </div>
               ))}

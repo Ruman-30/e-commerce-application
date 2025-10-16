@@ -9,7 +9,6 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading } = useSelector((state) => state.user);
-
   const [formData, setFormData] = useState({ email: "", password: "" });
 
   const handleChange = (e) => {
@@ -18,6 +17,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!formData.email || !formData.password) {
       toast.warning("Please fill all fields");
       return;
@@ -25,13 +25,15 @@ const Login = () => {
 
     try {
       dispatch(setLoading(true));
-      await api.post("/auth/login", formData, {
+
+      // Login request
+      const res = await api.post("/auth/login", formData, {
         withCredentials: true,
       });
-      const res = await api.get("/auth/me", { withCredentials: true });
+
+      // Set user directly from response
       dispatch(setUser({ user: res.data.user }));
-      console.log(res.data);
-      // dispatch(setUser(res.data));
+
       toast.success("Login successful!");
       navigate("/"); // redirect to home
     } catch (err) {

@@ -14,6 +14,7 @@ import OrderDetailsModal from "../../components/OrderDetailsModal";
 import api from "../../api/axios"; // axios instance
 import { toast } from "react-toastify";
 import LoadingModal from "../../components/LoadingModal";
+import ConfirmModal from "../../components/ConfirmModal";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -23,9 +24,12 @@ export default function OrdersPage() {
   // selectedOrder holds the full order details returned by the single-order endpoint
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
-  
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -70,11 +74,29 @@ export default function OrdersPage() {
   };
 
   // Cancel an order (only allowed when backend permits). Refresh list after success.
+   const handleCancelOrderClick = (orderId) => {
+    setOrderToCancel(orderId);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    try {
+      await api.patch(`/order/${orderToCancel}/cancel`);
+      toast.success("Order cancelled successfully");
+      setSelectedOrder(null);
+      setConfirmOpen(false);
+      fetchOrders();
+    } catch (err) {
+      console.error("Cancel order error:", err);
+      toast.error("Failed to cancel order");
+    }
+  };
+  
   const handleCancelOrder = async (orderId) => {
     try {
       if (!window.confirm("Are you sure you want to cancel this order?"))
         return;
-      await api.put(`/order/${orderId}/cancel`);
+      await api.patch(`/order/${orderId}/cancel`);
       toast.success("Order cancelled successfully");
       setSelectedOrder(null);
       fetchOrders();
@@ -318,9 +340,16 @@ export default function OrdersPage() {
       <OrderDetailsModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
-        onCancel={handleCancelOrder}
+        onCancel={handleCancelOrderClick}
       />
 
+      <ConfirmModal
+      isOpen={confirmOpen}
+      onClose={() => setConfirmOpen(false)}
+      onConfirm={handleConfirmCancel}
+      title="Cancel Order?"
+      message="Are you sure you want to cancel this order? This action cannot be undone."
+    />
       <Footer />
     </>
   );

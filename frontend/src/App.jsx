@@ -1,4 +1,3 @@
-import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Products from "./pages/Products/Products";
@@ -7,47 +6,30 @@ import Checkout from "./pages/Checkout/Checkout";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import ProductDetail from "./pages/ProductDetail/ProductDetail";
-import { useDispatch } from "react-redux";
-import  api  from "./api/axios";
-import { setUser } from "./features/userSlice";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useNavigate } from "react-router-dom";
 import PlaceOrder from "./pages/Cart/PlaceOrder";
-// import { initLenis, destroyLenis } from "./utils/lenis";
+import AuthWrapper from "./components/AuthWrapper";
+import AdminRoute from "./components/AdminRoute";
+import AdminRegister from "./pages/Auth/AdminRegister";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 const App = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  
-  // useEffect(() => {
-  //   initLenis();
-  //   return () => {
-  //     destroyLenis();
-  //   };
-  // }, []);
-
-  useEffect(() => {
-    const fetchCurrrentUser = async () => {
-      try {
-        const res = await api.get("/auth/me", { withCredentials: true });
-        dispatch(setUser({ user: res.data.user }));
-        navigate("/"); 
-      } catch (error) {
-        console.log("Not logged in yet");
-      }
-    };
-    fetchCurrrentUser();
-  }, []);
+ 
   return (
-    <Routes>
+    <AuthWrapper>
+      <Routes>
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/admin/register" element={<AdminRoute><AdminRegister /></AdminRoute>} />
+      <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
       <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
       <Route path="/products/:id" element={<ProtectedRoute><ProductDetail /></ProtectedRoute>} />
       <Route path="/checkout" element={<ProtectedRoute><PlaceOrder /></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+      <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
+    </AuthWrapper>
   );
 };
 

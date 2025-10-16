@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaSearch, FaUserCircle } from "react-icons/fa";
+import { FaShoppingCart, FaSearch, FaUserCircle, FaUserShield } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { toast, Bounce } from "react-toastify";
 import {
@@ -27,13 +27,7 @@ const Navbar = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (isCartOpen) {
-      document.body.style.overflow = "hidden"; // Lock body scroll
-    } else {
-      document.body.style.overflow = "auto"; // Unlock body scroll
-    }
-
-    // Cleanup on unmount
+    document.body.style.overflow = isCartOpen ? "hidden" : "auto";
     return () => {
       document.body.style.overflow = "auto";
     };
@@ -59,7 +53,6 @@ const Navbar = () => {
     }
   };
 
-  // Toggle cart drawer
   const handleCartClick = (e) => {
     e.preventDefault();
     if (!displayCart.length) {
@@ -69,7 +62,6 @@ const Navbar = () => {
     setIsCartOpen(true);
   };
 
-  // Quantity change handler inside Navbar
   const handleQuantityChange = async (item, delta) => {
     const newQty = item.quantity + delta;
     if (newQty < 1) return;
@@ -83,7 +75,6 @@ const Navbar = () => {
     }
   };
 
-  // Remove item
   const handleRemoveItem = async (productId) => {
     try {
       await dispatch(removeItemFromCart(productId)).unwrap();
@@ -92,7 +83,6 @@ const Navbar = () => {
     }
   };
 
-  // Clear cart
   const handleClearCart = async () => {
     try {
       await dispatch(clearCartBackend()).unwrap();
@@ -110,6 +100,7 @@ const Navbar = () => {
             <Link to="/">UrbanCart</Link>
           </div>
 
+          {/* Search */}
           <div className="flex-1 mx-6 relative">
             <form onSubmit={handleSearch}>
               <input
@@ -127,6 +118,7 @@ const Navbar = () => {
             </form>
           </div>
 
+          {/* Nav Links */}
           <div className="flex items-center space-x-6">
             <Link
               to="/login"
@@ -135,9 +127,30 @@ const Navbar = () => {
               <FaUserCircle />
               <span>{user ? `Hello, ${user.name}` : "Sign In"}</span>
             </Link>
+
             <Link to="/orders" className="hover:underline">
               Orders
             </Link>
+
+            {/* Admin-only button */}
+            {user?.role === "admin" && (
+              <button
+                onClick={() => navigate("/admin/register")}
+                className="text-sm cursor-pointer flex items-center bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-3 py-1 rounded-full transition duration-300"
+              >
+                <FaUserShield className="mr-2" /> Add Admin
+              </button>
+            )}
+            {/* Admin-only button */}
+            {user?.role === "admin" && (
+              <button
+                onClick={() => navigate("/admin/dashboard")}
+                className="text-sm cursor-pointer flex items-center bg-green-400 hover:bg-green-500 text-black font-semibold px-3 py-1 rounded-full transition duration-300"
+              >
+                <FaUserShield className="mr-2" /> Admin Dashboard
+              </button>
+            )}
+
             <Link
               to="/cart"
               className="relative flex items-center hover:underline"
@@ -151,6 +164,8 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* Cart Drawer */}
       <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}

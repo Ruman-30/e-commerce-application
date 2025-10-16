@@ -22,33 +22,42 @@ const Register = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { name, email, password, confirmPassword } = formData;
+  e.preventDefault();
+  const { name, email, password, confirmPassword } = formData;
 
-    if (!name || !email || !password || !confirmPassword) {
-      toast.warning("Please fill all fields");
-      return;
-    }
+  if (!name || !email || !password || !confirmPassword) {
+    toast.warning("Please fill all fields");
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      toast.warning("Passwords do not match");
-      return;
-    }
+  if (password !== confirmPassword) {
+    toast.warning("Passwords do not match");
+    return;
+  }
 
-    try {
-      dispatch(setLoading(true));
-      await api.post("/auth/register",{ name, email, password },{ withCredentials: true }); // your backend route
-      const res = await api.get("/auth/me", { withCredentials: true });
-      dispatch(setUser({ user: res.data.user }));
-      toast.success("Registration successful!");
-      navigate("/"); // redirect after registration
-    } catch (err) {
-      dispatch(setError(err.response?.data?.message || "Registration failed"));
-      toast.error(err.response?.data?.message || "Registration failed");
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
+  try {
+    dispatch(setLoading(true));
+
+    // Register user
+    const res = await api.post(
+      "/auth/register",
+      { name, email, password },
+      { withCredentials: true }
+    );
+
+    // Set user from response directly
+    dispatch(setUser({ user: res.data.user }));
+
+    toast.success("Registration successful!");
+    navigate("/"); // redirect after registration
+  } catch (err) {
+    dispatch(setError(err.response?.data?.message || "Registration failed"));
+    toast.error(err.response?.data?.message || "Registration failed");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 py-10">

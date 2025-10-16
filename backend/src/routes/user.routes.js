@@ -7,7 +7,8 @@ import {
   resetPasswordController,
   logoutController,
   refreshTokenController,
-  getCurrentUserController
+  getCurrentUserController,
+  getAllUsersController
 } from "../controllers/user.controllers.js";
 import {
   validateRegister,
@@ -17,6 +18,7 @@ import {
 import { apiLimiter } from "../middleware/rateLimit.middleware.js";
 import passport from "passport";
 import { authentication } from "../middleware/auth.middleware.js";
+import { isAdmin } from "../middleware/role.middleware.js";
 const router = express.Router();
 
 router.post(
@@ -41,4 +43,5 @@ router.post("/reset-password", apiLimiter, resetPasswordController)
 router.post("/refresh", refreshTokenController)
 router.post("/logout", apiLimiter, authentication, logoutController)
 router.get("/me", getCurrentUserController)
+router.get("/users", authentication, isAdmin, getAllUsersController)
 export default router;

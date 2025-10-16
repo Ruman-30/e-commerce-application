@@ -3,6 +3,10 @@ import {
   findById,
   FindOneUser,
   saveRefreshToken,
+  getAllUsers,
+  countUsers,
+  searchUsers,
+  countSearchUsers,
 } from "../dao/user.dao.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -34,9 +38,6 @@ export async function createUserRegisterController(req, res) {
       role: "customer",
     });
 
-    // const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
-    //   expiresIn: "1d",
-    // });
     const tokens = generateTokens(user);
     await saveRefreshToken(user._id, tokens.refreshToken);
     res.cookie("refreshToken", tokens.refreshToken, {
@@ -110,7 +111,6 @@ export async function createUserLoginController(req, res) {
       userId: user._id,
       name: user.name,
       email: user.email,
-      address: user.address,
       role: user.role,
     },
     accessToken: tokens.accessToken,
@@ -245,11 +245,9 @@ export async function refreshTokenController(req, res) {
   }
 }
 
-// controllers/auth.controller.js
 export async function getCurrentUserController(req, res) {
   try {
     const token = req.cookies?.accessToken;
-    console.log("acces token", token);
 
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
@@ -265,21 +263,31 @@ export async function getCurrentUserController(req, res) {
         email: user.email,
         role: user.role,
       },
-      token
+      token,
     });
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });
   }
 }
 
-// const token = jwt.sign(
-//   { userId: req.user._id, email: req.user.email },
-//   config.JWT_SECRET,
-//   {
-//     expiresIn: "1h",
-//   }
-// );
+export async function getAllUsersController(req, res) {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.search?.trim() || "";
 
-// const token = jwt.sign({ userId: user._id }, config.JWT_SECRET, {
-//   expiresIn: "1d",
-// });
+    let users, totalUsers;
+    if (search) {
+      users = await searchUsers({ search, limit, skip });
+      totalUsers = await countSearchUsers(search);
+    } else {
+      users = await getAllUsers({ limit, skip, sort: { createdAt: -1 } });
+      totalUsers = await countUsers();
+    }
+    const totalPages = Math.ceil(totalUsers / limit);
+    res.status(200).json({ users, totalPages, currentPage: page, totalUsers });
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong", error });
+  }
+}
