@@ -86,20 +86,6 @@ Redis-backed rate limiting
 
 Efficient MongoDB queries with pagination, limit & skip
 
-🗂️ Project Structure
-urban-cart/
-├── config/         # Config files (env, keys, DB, etc.)
-├── controllers/    # Route controllers
-├── dao/            # Data access layer
-├── db/             # Database connection
-├── docs/           # Swagger/OpenAPI docs
-├── middleware/     # Auth, error handling, rate limiters
-├── models/         # Mongoose schemas
-├── routes/         # Express routes
-├── services/       # Business logic
-├── utils/          # Helpers (tokens, validators, etc.)
-
-
 This layered architecture separates concerns and makes the project scalable & production-ready.
 
 🛠️ Tech Stack
@@ -138,7 +124,7 @@ Refresh token rotation (replaces old refresh token in DB)
 
 Swagger docs available at:
 
-http://localhost:5000/docs
+http://localhost:3000/docs
 
 🚀 Getting Started
 1️⃣ Clone repo
@@ -191,4 +177,4 @@ Role-based Access Control (RBAC)
 👨‍💻 Author
 
 Ruman Khan
-Backend Developer | Node.js | MongoDB | Express | Redis | Cloud-native APIs
+FullStack Web Developer | Node.js | MongoDB | Express | Redis | Cloud-native APIs
