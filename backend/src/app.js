@@ -23,6 +23,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use(passport.initialize());
 app.use(cookieParser())
+app.use(express.static("public"))
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/auth", userRoutes)
 app.use("/admin", adminRoutes)
@@ -31,4 +32,7 @@ app.use("/cart", cartRoutes)
 app.use("/order", orderRoutes)
 app.use("/payment", paymentRoutes)
 app.use("/review", reviewRoutes)
+app.get("*name", (req, res)=>{
+  res.sendFile(__dirname + "/public/index.html");
+})
 export default app

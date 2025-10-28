@@ -1,7 +1,5 @@
-import { createAdmin, findOneAdmin } from "../dao/admin.dao.js";
-import bcrypt, { hash } from "bcryptjs";
-import config from "../config/config.js";
-import jwt from "jsonwebtoken";
+import { createAdmin, findOneAdmin, getDashboardStatsDao } from "../dao/admin.dao.js";
+import bcrypt from "bcryptjs";
 import { generateTokens } from "../utils/generateToken.js";
 import { saveRefreshToken } from "../dao/user.dao.js";
 
@@ -49,3 +47,17 @@ export async function createAdminController(req, res) {
     accessToken: tokens.accessToken,
   });
 }
+
+export const getDashboardStats = async (req, res) => {
+  try {
+    const stats = await getDashboardStatsDao();
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error("Error fetching admin dashboard stats:", error);
+    res.status(500).json({
+      message: "Failed to fetch dashboard stats",
+      error: error.message,
+    });
+  }
+};
+

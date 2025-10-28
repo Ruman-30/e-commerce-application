@@ -1,11 +1,50 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import api from "../../api/axios";
+import LoadingModal from "../LoadingModal";
 
 export default function KPISection() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const { data } = await api.get("/admin/stats");
+        setStats(data);
+      } catch (err) {
+        console.error("Failed to fetch dashboard stats", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (!stats) return <LoadingModal show={loading} text="Loading Dashboard..." />;
+
   const kpis = [
-    { title: "Revenue", value: "$24,320", color: "from-green-500 to-emerald-500" },
-    { title: "Orders", value: "1,240", color: "from-blue-500 to-indigo-500" },
-    { title: "Customers", value: "980", color: "from-purple-500 to-pink-500" },
-    { title: "Products", value: "320", color: "from-orange-500 to-yellow-500" },
+    {
+      title: "Revenue",
+      value: `₹${stats.totalRevenue.toLocaleString()}`,
+      color: "from-green-500 to-emerald-500",
+    },
+    {
+      title: "Orders",
+      value: stats.totalOrders,
+      color: "from-blue-500 to-indigo-500",
+    },
+    {
+      title: "Customers",
+      value: stats.totalCustomers,
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      title: "Products",
+      value: stats.totalProducts,
+      color: "from-orange-500 to-yellow-500",
+    },
   ];
 
   return (

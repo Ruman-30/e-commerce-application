@@ -21,7 +21,10 @@ export default function PlaceOrderModern() {
   const cartItems = useSelector((s) => s.cart.items || []);
   const user = useSelector((s) => s.user.user) || null;
 
-  const subtotal = cartItems.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 1), 0);
+  const subtotal = cartItems.reduce(
+    (sum, i) => sum + (i.price || 0) * (i.quantity || 1),
+    0
+  );
   const defaultShipping = 49;
 
   // --- Load saved addresses from localStorage ---
@@ -30,20 +33,28 @@ export default function PlaceOrderModern() {
 
   // --- Shipping address state, default to last saved or user info ---
   const [shippingAddress, setShippingAddress] = useState(
-    savedAddresses.length ? savedAddresses[savedAddresses.length - 1] : {
-      fullName: user?.name || "",
-      phone: user?.phone || "",
-      street: "",
-      city: "",
-      state: "",
-      postalCode: "",
-      country: "India",
-    }
+    savedAddresses.length
+      ? savedAddresses[savedAddresses.length - 1]
+      : {
+          fullName: user?.name || "",
+          phone: user?.phone || "",
+          street: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "India",
+        }
   );
+  const [shippingMethod, setShippingMethod] = useState({
+    id: "standard",
+    label: "Standard Delivery (3–5 days)",
+    price: 49,
+  });
 
-  const [shippingMethod, setShippingMethod] = useState({ id: "standard", label: "Standard (3-5 days)", price: defaultShipping });
   const shippingCost = shippingMethod.price;
-  const taxes = Math.round((subtotal + shippingCost) * 0.05 * 100) / 100;
+  const taxes = Math.ceil(
+    Math.round((subtotal + shippingCost) * 0.05 * 100) / 100
+  );
   const grandTotal = Math.round((subtotal + shippingCost + taxes) * 100) / 100;
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
@@ -53,8 +64,30 @@ export default function PlaceOrderModern() {
   const [successPayload, setSuccessPayload] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  
+  // --- Load persisted checkout data on page load ---
   useEffect(() => {
-    const el = document.querySelector('#po-fullName');
+    const savedData = localStorage.getItem("checkoutData");
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      if (parsed.shippingAddress) setShippingAddress(parsed.shippingAddress);
+      if (parsed.shippingMethod) setShippingMethod(parsed.shippingMethod);
+      if (parsed.paymentMethod) setPaymentMethod(parsed.paymentMethod);
+    }
+  }, []);
+  // --- Persist checkout data ---
+  useEffect(() => {
+    const checkoutData = {
+      shippingAddress,
+      shippingMethod,
+      paymentMethod,
+      cartItems,
+    };
+    localStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+  }, [shippingAddress, shippingMethod, paymentMethod, cartItems]);
+  
+  useEffect(() => {
+    const el = document.querySelector("#po-fullName");
     if (el) el.focus();
   }, []);
 
@@ -64,7 +97,8 @@ export default function PlaceOrderModern() {
     if (!shippingAddress.phone?.trim()) e.phone = "Phone required";
     if (!shippingAddress.street?.trim()) e.street = "Street required";
     if (!shippingAddress.city?.trim()) e.city = "City required";
-    if (!shippingAddress.postalCode?.trim()) e.postalCode = "Postal code required";
+    if (!shippingAddress.postalCode?.trim())
+      e.postalCode = "Postal code required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -76,7 +110,9 @@ export default function PlaceOrderModern() {
 
   const openRazorpay = async (razorpayOrder, orderDbRecord) => {
     if (!window.Razorpay) {
-      toast.error("Razorpay script not loaded. Add <script src=\"https://checkout.razorpay.com/v1/checkout.js\"></script>");
+      toast.error(
+        'Razorpay script not loaded. Add <script src="https://checkout.razorpay.com/v1/checkout.js"></script>'
+      );
       return;
     }
 
@@ -111,14 +147,21 @@ export default function PlaceOrderModern() {
           setShowSuccess(true);
           try {
             const confettiModule = await import("canvas-confetti");
-            confettiModule.default({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
+            confettiModule.default({
+              particleCount: 160,
+              spread: 80,
+              origin: { y: 0.6 },
+            });
           } catch (_) {}
 
           dispatch(clearCartBackend());
+          localStorage.removeItem("checkoutData");
           toast.success("Payment successful — order confirmed!");
         } catch (err) {
           console.error("Verify error:", err?.response || err);
-          toast.error(err?.response?.data?.message || "Payment verification failed");
+          toast.error(
+            err?.response?.data?.message || "Payment verification failed"
+          );
         } finally {
           setLoading(false);
         }
@@ -143,20 +186,52 @@ export default function PlaceOrderModern() {
 
     if (!validateShipping()) return;
 
+    if (!shippingMethod || !shippingMethod.id) {
+      toast.warn("Please select a shipping method.");
+      return;
+    }
+
     setLoading(true);
+
     try {
+      const itemsPrice =
+        Math.round(
+          cartItems.reduce(
+            (sum, i) => sum + (i.price || 0) * (i.quantity || 1),
+            0
+          ) * 100
+        ) / 100;
+
+      const shippingPrice = shippingMethod.price;
+      const taxPrice = Math.round((itemsPrice + shippingPrice) * 0.05);
+      const totalAmount = Math.round(itemsPrice + shippingPrice + taxPrice);
+
+      // ✅ Make sure we're using the latest state value here
       const payload = {
         shippingAddress,
         paymentMethod,
-        shippingMethod: shippingMethod.id,
+        shippingMethod, // <-- now correct
+        itemsPrice,
+        shippingPrice,
+        taxPrice,
+        totalAmount,
+        items: cartItems.map((i) => ({
+          product: i.productId,
+          quantity: i.quantity,
+          price: i.price,
+          image: i.image,
+          name: i.name,
+        })),
       };
 
       const { data } = await api.post("/order", payload);
       const { order, razorpayOrder, message } = data;
 
-      // --- SAVE ADDRESS TO LOCALSTORAGE AFTER ORDER ---
+      // --- Save address locally ---
       try {
-        const savedOrders = JSON.parse(localStorage.getItem("savedOrders") || "[]");
+        const savedOrders = JSON.parse(
+          localStorage.getItem("savedOrders") || "[]"
+        );
         savedOrders.push({
           orderId: order?._id || new Date().getTime(),
           shippingAddress,
@@ -168,24 +243,36 @@ export default function PlaceOrderModern() {
       } catch (err) {
         console.warn("Failed to save order locally:", err);
       }
-      // -------------------------------------------------
 
+      // --- COD Flow ---
       if (paymentMethod === "COD") {
         toast.success(message || "Order placed (COD)");
         dispatch(clearCartBackend());
+        localStorage.removeItem("checkoutData");
         setSuccessPayload({ order, payment: null });
         setShowSuccess(true);
-          try {
-            const confettiModule = await import("canvas-confetti");
-            confettiModule.default({ particleCount: 160, spread: 80, origin: { y: 0.6 } });
-          } catch (_) {}
+
+        try {
+          const confettiModule = await import("canvas-confetti");
+          confettiModule.default({
+            particleCount: 160,
+            spread: 80,
+            origin: { y: 0.6 },
+          });
+        } catch (_) {}
 
         return;
       }
 
+      // --- Razorpay Flow ---
       if (razorpayOrder && order) {
-        if (razorpayOrder.amount && Math.round(grandTotal * 100) !== razorpayOrder.amount) {
-          toast.info("Note: Razorpay transaction amount may be capped in test mode to allow checkout.");
+        if (
+          razorpayOrder.amount &&
+          Math.round(totalAmount * 100) !== razorpayOrder.amount
+        ) {
+          toast.info(
+            "Note: Razorpay transaction amount may be capped in test mode to allow checkout."
+          );
         }
 
         await openRazorpay(razorpayOrder, order);
@@ -194,7 +281,9 @@ export default function PlaceOrderModern() {
       }
     } catch (err) {
       console.error("Place order error:", err?.response || err);
-      toast.error(err?.response?.data?.message || err.message || "Failed to place order");
+      toast.error(
+        err?.response?.data?.message || err.message || "Failed to place order"
+      );
     } finally {
       setLoading(false);
     }
@@ -210,31 +299,39 @@ export default function PlaceOrderModern() {
         >
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Checkout</h1>
-            <p className="text-sm text-gray-500">Secure checkout • {cartItems.length} item(s)</p>
+            <p className="text-sm text-gray-500">
+              Secure checkout • {cartItems.length} item(s)
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-2 rounded-full flex items-center gap-2">
               <FaTruck /> <span>Fast & secure</span>
             </div>
-            <div className="text-xs text-gray-500">Total: <strong className="ml-1">₹{grandTotal}</strong></div>
+            <div className="text-xs text-gray-500">
+              Total: <strong className="ml-1">₹{grandTotal}</strong>
+            </div>
           </div>
         </motion.header>
 
         <div className="grid md:grid-cols-12 gap-6">
           <section className="md:col-span-8 space-y-6">
-
             {/* --- ADDRESS HISTORY DROPDOWN --- */}
             {savedAddresses.length > 0 && (
               <div className="mb-4">
-                <label className="text-sm  text-gray-600">Select saved address</label>
+                <label className="text-sm  text-gray-600">
+                  Select saved address
+                </label>
                 <select
                   className="w-full bg-white mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
                   value={JSON.stringify(shippingAddress)}
-                  onChange={(e) => setShippingAddress(JSON.parse(e.target.value))}
+                  onChange={(e) =>
+                    setShippingAddress(JSON.parse(e.target.value))
+                  }
                 >
                   {savedAddresses.slice(0, 5).map((addr, idx) => (
                     <option key={idx} value={JSON.stringify(addr)}>
-                      {addr.fullName}, {addr.street}, {addr.city}, {addr.state}, {addr.postalCode}
+                      {addr.fullName}, {addr.street}, {addr.city}, {addr.state},{" "}
+                      {addr.postalCode}
                     </option>
                   ))}
                 </select>
@@ -256,10 +353,16 @@ export default function PlaceOrderModern() {
                     name="fullName"
                     value={shippingAddress.fullName}
                     onChange={handleChange}
-                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${errors.fullName ? "border-red-400" : "border-gray-200"} focus:ring-2 focus:ring-blue-400 outline-none`}
+                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${
+                      errors.fullName ? "border-red-400" : "border-gray-200"
+                    } focus:ring-2 focus:ring-blue-400 outline-none`}
                     placeholder="John Doe"
                   />
-                  {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
+                  {errors.fullName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.fullName}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">Phone</label>
@@ -267,67 +370,146 @@ export default function PlaceOrderModern() {
                     name="phone"
                     value={shippingAddress.phone}
                     onChange={handleChange}
-                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${errors.phone ? "border-red-400" : "border-gray-200"} focus:ring-2 focus:ring-blue-400 outline-none`}
+                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${
+                      errors.phone ? "border-red-400" : "border-gray-200"
+                    } focus:ring-2 focus:ring-blue-400 outline-none`}
                     placeholder="+91 98765 43210"
                   />
-                  {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
+                  {errors.phone && (
+                    <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+                  )}
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600">Street / Address</label>
+                  <label className="text-sm text-gray-600">
+                    Street / Address
+                  </label>
                   <input
                     name="street"
                     value={shippingAddress.street}
                     onChange={handleChange}
-                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${errors.street ? "border-red-400" : "border-gray-200"} focus:ring-2 focus:ring-blue-400 outline-none col-span-2`}
+                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${
+                      errors.street ? "border-red-400" : "border-gray-200"
+                    } focus:ring-2 focus:ring-blue-400 outline-none col-span-2`}
                     placeholder="Flat, Building, Area"
                   />
-                  {errors.street && <p className="text-xs text-red-500 mt-1">{errors.street}</p>}
+                  {errors.street && (
+                    <p className="text-xs text-red-500 mt-1">{errors.street}</p>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">City</label>
-                  <input name="city" value={shippingAddress.city} onChange={handleChange} className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none" />
+                  <input
+                    name="city"
+                    value={shippingAddress.city}
+                    onChange={handleChange}
+                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
+                  />
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">State</label>
-                  <input name="state" value={shippingAddress.state} onChange={handleChange} className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none" />
+                  <input
+                    name="state"
+                    value={shippingAddress.state}
+                    onChange={handleChange}
+                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
+                  />
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">Postal Code</label>
-                  <input name="postalCode" value={shippingAddress.postalCode} onChange={handleChange} className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none" />
+                  <input
+                    name="postalCode"
+                    value={shippingAddress.postalCode}
+                    onChange={handleChange}
+                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
+                  />
                 </div>
                 <div>
                   <label className="text-sm text-gray-600">Country</label>
-                  <input name="country" value={shippingAddress.country} onChange={handleChange} className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none" />
+                  <input
+                    name="country"
+                    value={shippingAddress.country}
+                    onChange={handleChange}
+                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
+                  />
                 </div>
               </div>
             </motion.div>
-
-           <motion.div className="bg-white rounded-2xl shadow p-6" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+            {/* --- SHIPPING METHOD (unchanged) --- */}
+            <motion.div
+              className="bg-white rounded-2xl shadow p-6"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <h2 className="text-lg font-semibold mb-4">Shipping Method</h2>
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { id: "standard", label: "Standard (3-5 days)", price: defaultShipping, desc: "Free delivery above ₹999" },
-                  { id: "express", label: "Express (1-2 days)", price: 199, desc: "Faster delivery" },
-                  { id: "overnight", label: "Overnight", price: 499, desc: "Next-day delivery" },
+                  {
+                    id: "standard",
+                    label: "Standard (3–5 days)",
+                    price: defaultShipping,
+                    desc: "Free delivery above ₹999",
+                  },
+                  {
+                    id: "express",
+                    label: "Express (1–2 days)",
+                    price: 199,
+                    desc: "Faster delivery",
+                  },
+                  {
+                    id: "overnight",
+                    label: "Overnight",
+                    price: 499,
+                    desc: "Next-day delivery",
+                  },
                 ].map((s) => (
-                  <button
+                  <motion.button
                     key={s.id}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setShippingMethod(s)}
-                    className={`text-left p-3 rounded-lg border transition ${shippingMethod.id === s.id ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-blue-300"}`}
+                    className={`relative text-left p-3 rounded-lg border transition-all duration-300 ease-out ${
+                      shippingMethod?.id === s.id
+                        ? "border-blue-600 bg-blue-50 shadow-sm"
+                        : "border-gray-200 hover:border-blue-300"
+                    }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium">{s.label}</div>
+                        <div className="font-medium text-gray-800">
+                          {s.label}
+                        </div>
                         <div className="text-xs text-gray-500">{s.desc}</div>
                       </div>
-                      <div className="text-sm font-semibold">₹{s.price}</div>
+                      <div className="text-sm font-semibold text-gray-800">
+                        ₹{s.price}
+                      </div>
                     </div>
-                  </button>
+
+                    {/* Selected Check Icon */}
+                    {shippingMethod?.id === s.id && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 18,
+                        }}
+                        className="absolute top-1 right-3 text-blue-600"
+                      >
+                        <FaCheckCircle size={18} />
+                      </motion.div>
+                    )}
+                  </motion.button>
                 ))}
               </div>
             </motion.div>
 
-            <motion.div className="bg-white rounded-2xl shadow p-6" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div
+              className="bg-white rounded-2xl shadow p-6"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
@@ -339,12 +521,18 @@ export default function PlaceOrderModern() {
                   <button
                     key={m.id}
                     onClick={() => setPaymentMethod(m.id)}
-                    className={`p-3 rounded-lg border flex items-center gap-3 transition ${paymentMethod === m.id ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-blue-300"}`}
+                    className={`p-3 rounded-lg border flex items-center gap-3 transition ${
+                      paymentMethod === m.id
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-gray-200 hover:border-blue-300"
+                    }`}
                   >
                     <m.icon />
                     <div className="text-left">
                       <div className="text-sm font-medium">{m.label}</div>
-                      <div className="text-xs text-gray-500">{m.id === "COD" ? "Pay on delivery" : "Pay securely"}</div>
+                      <div className="text-xs text-gray-500">
+                        {m.id === "COD" ? "Pay on delivery" : "Pay securely"}
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -361,26 +549,42 @@ export default function PlaceOrderModern() {
                 <FaAngleRight />
               </button>
             </div>
-
           </section>
 
           {/* RIGHT: order summary */}
           <aside className="md:col-span-4">
-            <motion.div className="sticky mt-7 top-43 bg-white rounded-xl shadow p-6" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div
+              className="sticky mt-7 top-43 bg-white rounded-xl shadow p-6"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
               <h3 className="text-lg font-semibold">Order Summary</h3>
 
               <div className="mt-4 divide-y divide-gray-100">
                 <div className="space-y-3 max-h-64 overflow-y-auto py-2">
                   {cartItems.map((it) => (
-                    <div key={it.productId} className="flex items-center justify-between gap-3 py-2">
+                    <div
+                      key={it.productId}
+                      className="flex items-center justify-between gap-3 py-2"
+                    >
                       <div className="flex items-center gap-3">
-                        <img src={it.image} alt={it.name} className="w-12 h-12 object-cover rounded" />
+                        <img
+                          src={it.image}
+                          alt={it.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
                         <div>
-                          <div className="text-sm font-medium max-w-[180px] truncate">{it.name}</div>
-                          <div className="text-xs text-gray-500">{it.quantity} × ₹{it.price}</div>
+                          <div className="text-sm font-medium max-w-[180px] truncate">
+                            {it.name}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {it.quantity} × ₹{it.price}
+                          </div>
                         </div>
                       </div>
-                      <div className="font-semibold">₹{it.price * it.quantity}</div>
+                      <div className="font-semibold">
+                        ₹{it.price * it.quantity}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -408,7 +612,9 @@ export default function PlaceOrderModern() {
                   </div>
 
                   <div className="mt-4">
-                    <button className="w-full py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">Apply Coupon</button>
+                    <button className="w-full py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">
+                      Apply Coupon
+                    </button>
                   </div>
                 </div>
               </div>
@@ -418,41 +624,33 @@ export default function PlaceOrderModern() {
 
         {/* Success overlay */}
         {showSuccess && (
-  <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-    <motion.div 
-      initial={{ scale: 0.9, opacity: 0 }} 
-      animate={{ scale: 1, opacity: 1 }} 
-      className="bg-white p-8 rounded-2xl shadow-2xl w-[420px] text-center"
-    >
-      <div className="flex flex-col items-center gap-4">
-        <FaCheckCircle className="text-green-600 text-5xl" />
-        <h2 className="text-2xl font-bold">Order Confirmed</h2>
-        <p className="text-gray-600">
-          {successPayload?.order?.paymentMethod === "COD" 
-            ? "Thank you — your order has been placed and will be collected on delivery." 
-            : "Thank you — your payment is confirmed and your order is being processed."}
-        </p>
-        <div className="mt-4">
-          <button 
-            onClick={() => navigate('/')} 
-            className="px-5 py-2 bg-blue-600 text-white rounded-lg"
-          >
-            Go back To Home
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  </div>
-)}
+          <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white p-8 rounded-2xl shadow-2xl w-[420px] text-center"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <FaCheckCircle className="text-green-600 text-5xl" />
+                <h2 className="text-2xl font-bold">Order Confirmed</h2>
+                <p className="text-gray-600">
+                  {successPayload?.order?.paymentMethod === "COD"
+                    ? "Thank you — your order has been placed and will be collected on delivery."
+                    : "Thank you — your payment is confirmed and your order is being processed."}
+                </p>
+                <div className="mt-4">
+                  <button
+                    onClick={() => navigate("/")}
+                    className="px-5 py-2 bg-blue-600 text-white rounded-lg"
+                  >
+                    Go back To Home
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-
-
-
-
-  
-
-  

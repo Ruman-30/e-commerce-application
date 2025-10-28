@@ -32,12 +32,9 @@ const orderSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+        itemsTotal: { type: Number, required: true }, // price * quantity
       },
     ],
-    totalAmount: {
-      type: Number,
-      required: true,
-    },
     shippingAddress: {
       fullName: { type: String, required: true },
       street: { type: String, required: true },
@@ -47,12 +44,16 @@ const orderSchema = new mongoose.Schema(
       country: { type: String, required: true },
       phone: { type: String, required: true },
     },
+    shippingMethod: {
+      id: { type: String, required: true }, // e.g., 'standard'
+      label: { type: String, required: true }, // e.g., 'Standard (3-5 days)'
+      price: { type: Number, required: true },
+    },
     paymentMethod: {
       type: String,
       enum: ["COD", "Card", "UPI", "NetBanking"],
       default: "COD",
     },
-
     payment: {
       razorpay_order_id: { type: String },
       razorpay_payment_id: { type: String },
@@ -63,16 +64,22 @@ const orderSchema = new mongoose.Schema(
         default: "Pending",
       },
     },
+    
+    totalAmount: { type: Number, required: true },
+    taxAmount: { type: Number, required: true },
 
     status: {
       type: String,
       enum: ["Pending", "Confirmed", "Shipped", "Delivered", "Cancelled"],
       default: "Pending",
     },
+    isPaid: { type: Boolean, default: false },
+    paidAt: Date,
+    isDelivered: { type: Boolean, default: false },
+    deliveredAt: Date,
   },
   { timestamps: true }
 );
 
 const orderModel = mongoose.model("Order", orderSchema);
-
 export default orderModel;

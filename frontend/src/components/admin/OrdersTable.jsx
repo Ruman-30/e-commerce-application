@@ -1,94 +1,57 @@
-// src/components/admin/OrdersTable.jsx
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import OrderDetailsDrawer from "./OrderDetailsDrawer";
 import { FaBox, FaClock, FaUser, FaArrowRight } from "react-icons/fa";
-
-const mockOrders = [
-  {
-    _id: "68ac580335c5d3bf4ecd6db3",
-    user: { _id: "689c6ebcaded42b334aa755d", name: "ruman", email: "ruman@gmail.com" },
-    shippingAddress: {
-      fullName: "test Khan",
-      street: "123 New market Road",
-      city: "MP",
-      postalCode: "110001",
-      state: "bhopal",
-      country: "India",
-      phone: "9765456798",
-    },
-    items: [
-      {
-        product: "68a375a0f9f1dc757ca46655",
-        quantity: 2,
-        price: 350,
-        image: "https://res.cloudinary.com/do7x5udgg/image/upload/v1755542943/ecommerce/products/i56kr6wi2ckxfvyuhtmc.jpg",
-        name: "Samsung Z fold",
-      },
-    ],
-    totalAmount: 700,
-    status: "Delivered",
-    createdAt: "2025-08-25T12:33:07.470Z",
-  },
-  {
-    _id: "68ac580335c5d3bf4ecd6dc4",
-    user: { _id: "689c6ebcaded42b334aa755e", name: "Alice Johnson", email: "alice@gmail.com" },
-    shippingAddress: {
-      fullName: "Alice Johnson",
-      street: "456 Elm Street",
-      city: "Delhi",
-      postalCode: "110002",
-      state: "Delhi",
-      country: "India",
-      phone: "9876543210",
-    },
-    items: [
-      {
-        product: "68a375a0f9f1dc757ca46656",
-        quantity: 1,
-        price: 799,
-        image: "https://via.placeholder.com/150",
-        name: "Apple AirPods",
-      },
-    ],
-    totalAmount: 799,
-    status: "Pending",
-    createdAt: "2025-08-26T09:15:00.000Z",
-  },
-  {
-    _id: "68ac580335c5d3bf4ecd6dc5",
-    user: { _id: "689c6ebcaded42b334aa755f", name: "Bob Williams", email: "bob@gmail.com" },
-    shippingAddress: {
-      fullName: "Bob Williams",
-      street: "789 Maple Avenue",
-      city: "Mumbai",
-      postalCode: "400001",
-      state: "Maharashtra",
-      country: "India",
-      phone: "9123456780",
-    },
-    items: [
-      {
-        product: "68a375a0f9f1dc757ca46657",
-        quantity: 3,
-        price: 533,
-        image: "https://via.placeholder.com/150",
-        name: "Sony Headphones",
-      },
-    ],
-    totalAmount: 1599,
-    status: "Cancelled",
-    createdAt: "2025-08-27T14:42:00.000Z",
-  },
-];
+import api from "../../api/axios";
+import LoadingModal from "../LoadingModal";
 
 export default function OrdersTable() {
+  const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [status, setStatus] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [loadingOrder, setLoadingOrder] = useState(false);
 
-  const handleViewOrder = (order) => {
-    setSelectedOrder(order);
-    setIsDrawerOpen(true);
+  // ✅ Fetch Orders
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get("/order/admin/orders", {
+        params: { page, limit: 10, status: status || undefined },
+      });
+      setOrders(data.orders || []);
+      setTotalPages(data.totalPages || 1);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [page, status]);
+
+  const fetchOrderDetails = async (orderId) => {
+    try {
+      setLoadingOrder(true);
+      const { data } = await api.get(`/order/${orderId}`);
+      setSelectedOrder(data.order);
+      setIsDrawerOpen(true);
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+    } finally {
+      setLoadingOrder(false);
+    }
+  };
+
+  const handleOrderUpdated = async () => {
+    await fetchOrders();
+    setIsDrawerOpen(false);
   };
 
   const getStatusColor = (status) => {
@@ -101,6 +64,8 @@ export default function OrdersTable() {
         return "bg-red-100 text-red-700";
       case "Shipped":
         return "bg-blue-100 text-blue-700";
+      case "Confirmed":
+        return "bg-indigo-100 text-indigo-700";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -111,64 +76,182 @@ export default function OrdersTable() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-5 rounded-2xl shadow-md border border-slate-100"
+        className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-md border border-slate-100 relative"
       >
-        <h2 className="text-xl font-semibold mb-5 flex items-center gap-2 text-slate-800">
-          <FaBox className="text-slate-500" /> All Orders
-        </h2>
+        {/* Header */}
+        <div className="flex flex-wrap justify-between items-center mb-4 sm:mb-6 gap-3">
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2 text-slate-800">
+            <FaBox className="text-slate-500" /> All Orders
+          </h2>
 
-        <div className="grid gap-4">
-          {mockOrders.map((order) => (
-            <motion.div
-              key={order._id}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => handleViewOrder(order)}
-              className="p-4 bg-slate-50 rounded-xl cursor-pointer hover:shadow-md transition-all border border-slate-100 flex justify-between items-center"
+          {/* ✅ Modern Status Filter */}
+          <div className="relative w-full sm:w-auto">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowDropdown((prev) => !prev)}
+              className="w-full sm:w-auto flex items-center justify-between sm:justify-center gap-2 border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-700 bg-white shadow-sm hover:shadow-md transition-all focus:ring-2 focus:ring-indigo-500"
             >
-              <div className="flex items-center gap-4">
-                <img
-                  src={order.items[0].image}
-                  alt={order.items[0].name}
-                  className="w-14 h-14 object-cover"
+              <span className="font-medium">
+                {status ? status : "All Status"}
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  showDropdown ? "rotate-180" : ""
+                }`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
                 />
-                <div>
-                  <p className="font-semibold text-slate-800">
-                    {order.items[0].name}
-                  </p>
-                  <p className="text-sm text-slate-500 flex items-center gap-2">
-                    <FaUser className="text-xs" /> {order.user.name}
-                  </p>
-                  <p className="text-xs text-slate-400 flex items-center gap-1">
-                    <FaClock className="text-xs" />{" "}
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
+              </svg>
+            </motion.button>
 
-              <div className="text-right flex gap-2 items-center">
-                <p className="font-semibold text-slate-700">
-                  ₹{order.totalAmount.toLocaleString()}
-                </p>
-                <span
-                  className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(
-                    order.status
-                  )}`}
+            <AnimatePresence>
+              {showDropdown && (
+                <motion.ul
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -5 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-[160px] sm:min-w-[180px] bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden"
                 >
-                  {order.status}
-                </span>
+                  {[
+                    "",
+                    "Pending",
+                    "Confirmed",
+                    "Shipped",
+                    "Delivered",
+                    "Cancelled",
+                  ].map((opt) => (
+                    <li
+                      key={opt || "All"}
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setStatus(opt);
+                        setPage(1);
+                      }}
+                      className={`px-4 py-2 cursor-pointer text-sm hover:bg-indigo-50 transition-all ${
+                        status === opt
+                          ? "bg-indigo-100 text-indigo-600 font-medium"
+                          : "text-slate-700"
+                      }`}
+                    >
+                      {opt || "All Status"}
+                    </li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
 
-              <FaArrowRight className="text-slate-400 ml-3" />
-              </div>
-            </motion.div>
-          ))}
+        {/* Orders List */}
+        {orders.length === 0 ? (
+          <p className="text-center text-gray-400 py-6 text-sm sm:text-base">
+            No orders found.
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:gap-4">
+            {orders.map((order) => (
+              <motion.div
+                key={order._id}
+                whileHover={{ scale: 1.01 }}
+                onClick={() => fetchOrderDetails(order._id)}
+                className="p-3 sm:p-4 bg-slate-50 rounded-xl cursor-pointer hover:shadow-md transition-all border border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-3"
+              >
+                {/* Left Section */}
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <img
+                    src={order.items?.[0]?.image}
+                    alt={order.items?.[0]?.name}
+                    className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md"
+                  />
+                  <div>
+                    <p className="font-semibold text-slate-800 text-sm sm:text-base">
+                      {order.items?.[0]?.name}
+                    </p>
+                    <p className="text-xs sm:text-sm text-slate-500 flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <FaUser className="text-[10px] sm:text-xs" />{" "}
+                      {order.user?.name}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1">
+                      <FaClock className="text-[10px]" />{" "}
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right Section */}
+                <div className="flex flex-wrap justify-between sm:justify-end items-center gap-2 sm:gap-3 text-right">
+                  <p className="font-semibold text-slate-700 text-sm sm:text-base">
+                    ₹{order.totalAmount?.toLocaleString()}
+                  </p>
+                  <span
+                    className={`text-[10px] sm:text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(
+                      order.status
+                    )}`}
+                  >
+                    {order.status}
+                  </span>
+                  <FaArrowRight className="text-slate-400 text-xs sm:text-sm" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="flex flex-wrap gap-2 items-center justify-center pt-5">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage((prev) => prev - 1)}
+            className={`px-3 py-1 text-xs sm:text-sm rounded-md border ${
+              page === 1
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
+            }`}
+          >
+            Prev
+          </button>
+
+          <span className="text-xs sm:text-sm text-gray-600">
+            Page {page} of {totalPages}
+          </span>
+
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage((prev) => prev + 1)}
+            className={`px-3 py-1 text-xs sm:text-sm rounded-md border ${
+              page === totalPages
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-indigo-100 text-indigo-600 hover:bg-indigo-200"
+            }`}
+          >
+            Next
+          </button>
         </div>
       </motion.div>
 
-      {/* Drawer for order details */}
+      {/* ✅ Reusable Loader */}
+      <LoadingModal
+        show={loading}
+        text="Fetching orders, please wait..."
+        fullscreen={true}
+      />
+
+      {/* Drawer */}
       <OrderDetailsDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         order={selectedOrder}
+        loading={loadingOrder}
+        onOrderUpdated={handleOrderUpdated}
       />
     </>
   );

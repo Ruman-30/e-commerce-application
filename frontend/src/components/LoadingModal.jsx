@@ -15,7 +15,7 @@ export default function LoadingModal({
           exit={{ opacity: 0 }}
           className={`${
             fullscreen ? "fixed inset-0" : "absolute inset-0"
-          } bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4`}
+          } bg-black/40 backdrop-blur-sm z-100 flex items-center justify-center p-4`}
         >
           <motion.div
             initial={{ scale: 0.95 }}

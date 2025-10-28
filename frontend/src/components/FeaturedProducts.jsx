@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { motion } from "framer-motion";
-import api from "../api/axios"; // ✅ your axios instance
-import { addItemToCart } from "../features/cartSlice"; // ✅ adjust path if needed
+import api from "../api/axios";
+import { addItemToCart } from "../features/cartSlice";
 import { toast } from "react-toastify";
 
 const FeaturedProducts = () => {
@@ -45,41 +45,48 @@ const FeaturedProducts = () => {
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-12">
-      <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-5 sm:mb-6 text-gray-800 text-center sm:text-left">
+        Featured Products
+      </h2>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {Array(4)
             .fill(0)
             .map((_, i) => (
               <div
                 key={i}
-                className="bg-white rounded-lg shadow-md h-72 animate-pulse"
+                className="bg-white rounded-xl shadow-md h-64 sm:h-72 animate-pulse"
               ></div>
             ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {featured.map((product) => (
             <motion.div
               key={product._id}
               whileHover={{ scale: 1.03 }}
-              className="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden cursor-pointer flex flex-col justify-between"
+              className="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden flex flex-col justify-between transition-all duration-300"
             >
-              <img
-                src={product.images?.[0]?.url || "/placeholder.png"}
-                alt={product.name}
-                className=" h-60 object-top object-cover transition-transform duration-300 hover:scale-105"
-              />
-              <div className="p-4">
-                <h3 className="font-semibold line-clamp-1">{product.name}</h3>
-                <p className="text-blue-600 font-bold mt-1">
-                  <span className="text-black">₹</span>{product.price.toLocaleString("en-IN")}
+              <div className="relative">
+                <img
+                  src={product.images?.[0]?.url || "/placeholder.png"}
+                  alt={product.name}
+                  className="w-full h-52 sm:h-60 object-cover object-top transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+
+              <div className="p-3 sm:p-4">
+                <h3 className="font-semibold text-sm sm:text-base text-gray-800 line-clamp-1">
+                  {product.name}
+                </h3>
+                <p className="text-blue-600 font-bold mt-1 text-sm sm:text-base">
+                  ₹{product.price.toLocaleString("en-IN")}
                 </p>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="mt-3 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-lg transition"
+                  className="mt-3 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-lg text-sm sm:text-base transition"
                 >
                   Add to Cart
                 </button>

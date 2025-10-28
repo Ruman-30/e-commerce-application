@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { addItemToCart } from "../../features/cartSlice";
 import LoadingModal from "../../components/LoadingModal";
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -38,7 +39,6 @@ export default function ProductDetail() {
         setProduct(prod);
         setHasPurchased(res.data.hasPurchased);
 
-        // Reviews
         try {
           const reviewRes = await api.get(`/review/product/${id}/reviews`);
           setReviews(reviewRes.data.review || []);
@@ -46,7 +46,6 @@ export default function ProductDetail() {
           setReviews([]);
         }
 
-        // Related Products
         if (prod.category) {
           try {
             const relatedRes = await api.get(
@@ -67,7 +66,6 @@ export default function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  // Quantity handlers
   const handleIncrease = () => {
     if (product.stock && quantity < product.stock) setQuantity((q) => q + 1);
     else toast.info("No more stock available!");
@@ -76,18 +74,17 @@ export default function ProductDetail() {
     if (quantity > 1) setQuantity((q) => q - 1);
   };
 
-  // Add to Cart (Redux + backend)
- const handleAddToCart = async () => {
-  if (!product) return;
-
-  try {
-    await dispatch(addItemToCart({ productId: product._id, quantity })).unwrap();
-    toast.success(`${product.name} added to cart!`);
-  } catch (err) {
-    toast.error(err.response?.data?.message || "Failed to add to cart");
-  }
-};
-
+  const handleAddToCart = async () => {
+    if (!product) return;
+    try {
+      await dispatch(
+        addItemToCart({ productId: product._id, quantity })
+      ).unwrap();
+      toast.success(`${product.name} added to cart!`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add to cart");
+    }
+  };
 
   const handleBuyNow = async () => {
     await handleAddToCart();
@@ -116,8 +113,6 @@ export default function ProductDetail() {
     }
   };
 
-  const handleProductClick = (prodId) => navigate(`/products/${prodId}`);
-
   if (loading || !product) {
     return (
       <>
@@ -127,12 +122,17 @@ export default function ProductDetail() {
     );
   }
 
+  const trimDesc = (desc, maxLength = 500) => {
+    if (!desc) return "";
+    return desc.length > maxLength ? desc.slice(0, maxLength) + "..." : desc;
+  };
+
   return (
     <>
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 pt-30">
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 md:px-6 py-8 pt-28">
         {/* Top Section */}
-        <div className="grid md:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
           {/* Left: Images */}
           <div>
             <Swiper
@@ -148,11 +148,11 @@ export default function ProductDetail() {
             >
               {product.images?.map((img, i) => (
                 <SwiperSlide key={i}>
-                  <div className="w-full h-[40vh] md:h-[60vh] flex items-center justify-center">
+                  <div className="w-full h-[45vh] sm:h-[50vh] md:h-[60vh] flex items-center justify-center bg-gray-50 rounded-lg">
                     <img
                       src={img.url || img}
                       alt={product.name}
-                      className="max-w-[60%] max-h-full object-contain rounded-lg"
+                      className="max-w-[80%] max-h-full object-contain rounded-lg"
                     />
                   </div>
                 </SwiperSlide>
@@ -168,7 +168,7 @@ export default function ProductDetail() {
                   alt="thumbnail"
                   onMouseEnter={() => swiperRef.current?.slideToLoop(i)}
                   onClick={() => swiperRef.current?.slideToLoop(i)}
-                  className={`w-16 h-16 md:w-20 md:h-20 object-cover border rounded-md cursor-pointer transition ${
+                  className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover border rounded-md cursor-pointer transition ${
                     activeIndex === i ? "border-blue-500" : "border-gray-300"
                   }`}
                 />
@@ -177,23 +177,23 @@ export default function ProductDetail() {
           </div>
 
           {/* Right: Details */}
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+          <div className="flex flex-col">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">
               {product.name}
             </h1>
             <div className="flex items-center mb-3">
               <span className="text-yellow-500 text-lg">
                 ★ {product.averageRating?.toFixed(1) || 0}
               </span>
-              <span className="ml-2 text-gray-500">
+              <span className="ml-2 text-gray-500 text-sm sm:text-base">
                 ({product.numOfReviews || 0} reviews)
               </span>
             </div>
-            <p className="text-xl md:text-2xl font-semibold text-blue-600 mb-4">
+            <p className="text-blue-600 font-semibold text-lg sm:text-xl md:text-2xl mb-3">
               ₹{product.price}
             </p>
-            <p className="text-gray-700 mb-4 line-clamp-4">
-              {product.description}
+            <p className="text-gray-700 mb-3 text-sm sm:text-base leading-relaxed">
+              {trimDesc(product.description, 500)}
             </p>
             <p
               className={`mb-4 font-medium ${
@@ -205,51 +205,60 @@ export default function ProductDetail() {
                 : "Out of stock"}
             </p>
 
-            {/* Quantity Selector */}
-            <div className="flex items-center gap-4 mb-6">
-              <button
-                onClick={handleDecrease}
-                className="px-3 py-1 border rounded-md"
-              >
-                -
-              </button>
-              <span>{quantity}</span>
-              <button
-                onClick={handleIncrease}
-                className="px-3 py-1 border rounded-md"
-              >
-                +
-              </button>
-            </div>
+            {/* Quantity + Buttons */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+              {/* Quantity Selector */}
+              <div className="flex items-center justify-center sm:justify-start gap-4">
+                <button
+                  onClick={handleDecrease}
+                  className="px-3 py-1 border rounded-md"
+                >
+                  -
+                </button>
+                <span>{quantity}</span>
+                <button
+                  onClick={handleIncrease}
+                  className="px-3 py-1 border rounded-md"
+                >
+                  +
+                </button>
+              </div>
 
-            {/* Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={handleAddToCart}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
-              >
-                Add to Cart
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50"
-              >
-                Buy Now
-              </button>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto justify-center sm:justify-start">
+                <button
+                  onClick={handleAddToCart}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto"
+                >
+                  Add to Cart
+                </button>
+                <button
+                  onClick={handleBuyNow}
+                  className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition w-full sm:w-auto"
+                >
+                  Buy Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Product Details */}
-        <div className="mt-12">
-          <h2 className="text-xl font-bold mb-4">Product Details</h2>
-          <p className="text-gray-600 leading-relaxed">{product.description}</p>
+        <div className="mt-10 sm:mt-12">
+          <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">
+            Product Details
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
+            {product.description}
+          </p>
         </div>
 
         {/* Reviews Section */}
-        <div className="mt-12">
+        <div className="mt-10 sm:mt-12">
           {reviews.length > 0 && (
-            <h2 className="text-xl font-bold mb-4">Customer Reviews</h2>
+            <h2 className="text-lg sm:text-xl font-bold mb-4">
+              Customer Reviews
+            </h2>
           )}
           <div className="flex flex-col gap-4 max-h-96 overflow-y-auto pr-2">
             {reviews.map((review) => (
@@ -258,7 +267,7 @@ export default function ProductDetail() {
                 className="p-4 bg-gray-100 rounded-lg shadow-sm hover:shadow-md transition"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-gray-800">
+                  <span className="font-semibold text-gray-800 text-sm sm:text-base">
                     {review.user.name}
                   </span>
                   <span className="flex items-center gap-1 text-yellow-500">
@@ -283,11 +292,13 @@ export default function ProductDetail() {
 
           {/* Add Review Form */}
           {hasPurchased && (
-            <div className="mt-6 p-6 bg-gray-100 shadow-md rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
+            <div className="mt-6 p-5 bg-gray-100 shadow-md rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold mb-4">
+                Write a Review
+              </h3>
               <form onSubmit={handleReviewSubmit}>
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-gray-700 font-medium">
+                  <span className="text-gray-700 font-medium text-sm sm:text-base">
                     Your Rating:
                   </span>
                   <div className="flex items-center gap-1">
@@ -301,7 +312,7 @@ export default function ProductDetail() {
                         className="transition"
                       >
                         <svg
-                          className={`w-6 h-6 md:w-7 md:h-7 ${
+                          className={`w-6 h-6 ${
                             newReview.rating > i
                               ? "text-yellow-400"
                               : "text-gray-300"
@@ -322,11 +333,11 @@ export default function ProductDetail() {
                     setNewReview({ ...newReview, comment: e.target.value })
                   }
                   rows="4"
-                  className="w-full px-4 py-2 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className="w-full px-4 py-2 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm sm:text-base"
                 ></textarea>
                 <button
                   type="submit"
-                  className="mt-3 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="mt-3 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition text-sm sm:text-base"
                 >
                   Submit Review
                 </button>
@@ -336,34 +347,46 @@ export default function ProductDetail() {
         </div>
 
         {/* Related Products */}
-        <div className="mt-12">
-          <h2 className="text-xl font-bold mb-4">Related Products</h2>
+        <div className="mt-10 sm:mt-12">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">
+            Related Products
+          </h2>
           {relatedProducts.length === 0 ? (
             <p className="text-gray-600">No related products found.</p>
           ) : (
             <Swiper
-              modules={[Navigation]}
-              navigation
               spaceBetween={20}
-              slidesPerView={1}
+              navigation
+              modules={[Navigation]}
               breakpoints={{
-                640: { slidesPerView: 2 },
-                1024: { slidesPerView: 4 },
+                0: {
+                  slidesPerView: 2, // mobile
+                },
+                768: {
+                  slidesPerView: 3, // tablet
+                },
+                1024: {
+                  slidesPerView: 4, // desktop
+                },
               }}
             >
-              {relatedProducts.map((prod) => (
-                <SwiperSlide key={prod._id}>
+              {relatedProducts.map((product, index) => (
+                <SwiperSlide key={index}>
                   <div
-                    onClick={() => handleProductClick(prod._id)}
-                    className="p-4 rounded-lg text-center shadow-blue-400 hover:scale-102 hover:shadow-lg transition cursor-pointer flex flex-col items-center h-[41vh]"
+                    onClick={() => navigate(`/products/${product._id}`)}
+                    className="bg-white rounded-lg shadow hover:shadow-lg transition p-3 cursor-pointer"
                   >
                     <img
-                      src={prod.images?.[0]?.url}
-                      alt={prod.name}
-                      className="h-40 object-contain mb-2"
+                      src={ product.images?.[0]?.url || "/placeholder.png" }
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-md"
                     />
-                    <p className="font-medium">{prod.name}</p>
-                    <p className="text-blue-600 font-semibold">₹{prod.price}</p>
+                    <div className="mt-2">
+                      <h3 className="font-semibold text-gray-800">
+                        {product.name}
+                      </h3>
+                      <p className="text-gray-600">${product.price}</p>
+                    </div>
                   </div>
                 </SwiperSlide>
               ))}
@@ -375,3 +398,5 @@ export default function ProductDetail() {
     </>
   );
 }
+
+

@@ -3,11 +3,11 @@ import {
   findOrdersByUser,
   findOrderById,
   updateOrderStatus,
-  findAllOrder,
   countAllOrders,
   countUserOrders,
   cancelOrder,
   updateOrderPayment,
+  findOrderSummaries,
 } from "../dao/order.dao.js";
 import { clearCart, findCartByUser } from "../dao/cart.dao.js";
 import {
@@ -20,7 +20,7 @@ import { createRazorpayOrder } from "../services/payment.service.js";
 export async function createOrderController(req, res) {
   try {
     const userId = req.user._id;
-    const { shippingAddress, paymentMethod } = req.body;
+    const { shippingAddress, paymentMethod, shippingMethod } = req.body;
 
     if (!shippingAddress) {
       return res.status(400).json({ message: "Shipping address is required" });
@@ -47,26 +47,41 @@ export async function createOrderController(req, res) {
       })
     );
 
-    const totalAmount = orderItems.reduce(
+    const itemsPrice = orderItems.reduce(
       (sum, item) => sum + item.itemsTotal,
       0
     );
+    // ✅ Use frontend-provided values if available
+    const shippingMethodFromClient = req.body.shippingMethod || "standard";
+    console.log(shippingMethodFromClient);
+
+    const shippingPrice = req.body.shippingPrice ?? 49;
+    const taxPrice =
+      req.body.taxPrice ?? Math.ceil(Math.round((itemsPrice + shippingPrice) * 0.05)); // ✅ round to nearest integer
+    const totalAmount =
+      req.body.totalAmount ?? Math.ceil(itemsPrice + shippingPrice + taxPrice);
 
     const newOrder = await createOrder({
       user: userId,
       items: orderItems,
+      taxAmount: taxPrice,
       totalAmount,
       shippingAddress: {
-        fullName,
         street,
         country,
         state,
         postalCode,
         phone,
+        fullName,
         city,
       },
+      shippingMethod: {
+        id: shippingMethodFromClient?.id || "standard",
+        label: shippingMethodFromClient?.label || "Standard (3-5 days)",
+        price: shippingPrice,
+      },
       paymentMethod,
-      paymentStatus: "pending",
+      payment: { paymentStatus: "Pending" },
     });
 
     if (paymentMethod === "COD") {
@@ -123,7 +138,7 @@ export async function getOrderByUserController(req, res) {
       totalAmount: order.totalAmount,
       createdAt: order.createdAt,
       paymentMethod: order.paymentMethod,
-      paymentStatus: order.paymentStatus, 
+      paymentStatus: order.paymentStatus,
       shippingAddress: {
         fullName: order.shippingAddress.fullName,
         city: order.shippingAddress.city,
@@ -157,20 +172,15 @@ export async function getAllOrdersController(req, res) {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    let filter = {};
-    if (req.query.status) {
-      filter.status = req.query.status;
-    }
-    const orders = await findAllOrder({ page, limit }, filter);
-    if (!orders || orders.length === 0) {
-      return res.status(404).json({
-        message: "No orders found.",
-      });
-    }
+    const filter = {};
 
+    if (req.query.status) filter.status = req.query.status;
+
+    const orders = await findOrderSummaries({ page, limit }, filter);
     const totalOrders = await countAllOrders(filter);
+
     res.status(200).json({
-      message: "Order's fetched successfully.",
+      message: "Orders fetched successfully.",
       currentPage: page,
       totalPages: Math.ceil(totalOrders / limit),
       totalOrders,

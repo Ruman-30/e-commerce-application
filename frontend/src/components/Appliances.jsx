@@ -37,34 +37,56 @@ export default function Appliances() {
 
   return (
     <section className="py-10 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-2xl font-bold mb-6">Best deals on appliances</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 px-2 sm:px-0">
+          Best deals on appliances
+        </h2>
 
         <Swiper
-          spaceBetween={20}
+          spaceBetween={15}
           slidesPerView={5}
           slidesPerGroup={3}
           speed={600}
           navigation
           modules={[Navigation]}
+          breakpoints={{
+            0: {
+              slidesPerView: 2,
+              slidesPerGroup: 2,
+              spaceBetween: 10,
+            },
+            640: {
+              slidesPerView: 3,
+              slidesPerGroup: 2,
+              spaceBetween: 15,
+            },
+            1024: {
+              slidesPerView: 5,
+              slidesPerGroup: 3,
+              spaceBetween: 20,
+            },
+          }}
         >
           {appliances.map((cat) => (
             <SwiperSlide key={cat._id}>
               <div
                 onClick={() => handleBestDealsClick(cat.name)}
-                className="flex flex-col items-center text-center bg-white p-4 rounded-lg hover:shadow-lg transition cursor-pointer"
+                className="flex flex-col items-center text-center bg-white p-3 sm:p-4 rounded-lg hover:shadow-lg transition cursor-pointer"
               >
-               <div className="flex flex-col items-center mb-5"> 
-                 <img
-                  src={cat.images?.[0]?.url}
-                  alt={cat.name}
-                  className="h-[25vh] mb-2 object-contain"
-                />
-                <p className="font-medium">{trimName(cat.name)}</p>
-               </div>
-                 <p className="font-semibold text-blue-600 mb-4">
-                    <span className="text-black">₹</span>{cat.price}
+                <div className="flex flex-col items-center mb-3 sm:mb-5">
+                  <img
+                    src={cat.images?.[0]?.url}
+                    alt={cat.name}
+                    className="h-[18vh] sm:h-[22vh] md:h-[25vh] object-contain mb-2"
+                  />
+                  <p className="font-medium text-sm sm:text-base md:text-lg">
+                    {trimName(cat.name)}
                   </p>
+                </div>
+                <p className="font-semibold text-green-600 text-sm sm:text-base md:text-lg">
+                  <span>₹</span>
+                  {cat.price}
+                </p>
               </div>
             </SwiperSlide>
           ))}
