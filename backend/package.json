@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit"
+    "test": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit",
+     "start": "node server.js"
   },
   "keywords": [],
   "author": "",
