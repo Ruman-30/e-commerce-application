@@ -42,14 +42,14 @@ export async function createUserRegisterController(req, res) {
     await saveRefreshToken(user._id, tokens.refreshToken);
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     res.cookie("accessToken", tokens.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       // maxAge: 15 * 60 * 1000,
     });
     res.status(201).json({
@@ -93,15 +93,15 @@ export async function createUserLoginController(req, res) {
   await saveRefreshToken(user._id, tokens.refreshToken);
   res.cookie("refreshToken", tokens.refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: true,
+    sameSite: "none",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 
   res.cookie("accessToken", tokens.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: true,
+    sameSite: "none",
     // maxAge: 15 * 60 * 1000, // 15 minutes
   });
 
@@ -124,15 +124,15 @@ export async function registerUserByGoogleController(req, res) {
 
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.cookie("accessToken", tokens.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       // maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.redirect("http://localhost:5173/"); // replace with your frontend URL
@@ -196,8 +196,8 @@ export async function logoutController(req, res) {
     // console.log("User in logout:", req.user);
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
     });
 
     res.status(200).json({ message: "Logged out successfully" });
@@ -223,15 +223,15 @@ export async function refreshTokenController(req, res) {
     await saveRefreshToken(user._id, tokens.refreshToken);
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.cookie("accessToken", tokens.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
