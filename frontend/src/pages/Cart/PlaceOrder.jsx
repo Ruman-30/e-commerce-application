@@ -289,368 +289,334 @@ export default function PlaceOrderModern() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#E0EFFF] py-16 px-4">
-      <div className="max-w-6xl mx-auto">
-        <motion.header
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-6"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Checkout</h1>
-            <p className="text-sm text-gray-500">
-              Secure checkout • {cartItems.length} item(s)
-            </p>
+ return (
+  <div className="min-h-screen bg-[#E0EFFF] py-10 sm:py-14 px-3 sm:px-6 md:px-10">
+    <div className="max-w-6xl mx-auto">
+      {/* HEADER */}
+      <motion.header
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3 sm:gap-0"
+      >
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Checkout
+          </h1>
+          <p className="text-sm text-gray-500">
+            Secure checkout • {cartItems.length} item(s)
+          </p>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-between">
+          <div className="text-xs sm:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-2 rounded-full flex items-center gap-2">
+            <FaTruck /> <span>Fast & secure</span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-2 rounded-full flex items-center gap-2">
-              <FaTruck /> <span>Fast & secure</span>
-            </div>
-            <div className="text-xs text-gray-500">
-              Total: <strong className="ml-1">₹{grandTotal}</strong>
-            </div>
+          <div className="text-xs sm:text-sm text-gray-600">
+            Total: <strong className="ml-1">₹{grandTotal}</strong>
           </div>
-        </motion.header>
+        </div>
+      </motion.header>
 
-        <div className="grid md:grid-cols-12 gap-6">
-          <section className="md:col-span-8 space-y-6">
-            {/* --- ADDRESS HISTORY DROPDOWN --- */}
-            {savedAddresses.length > 0 && (
-              <div className="mb-4">
-                <label className="text-sm  text-gray-600">
-                  Select saved address
-                </label>
-                <select
-                  className="w-full bg-white mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
-                  value={JSON.stringify(shippingAddress)}
-                  onChange={(e) =>
-                    setShippingAddress(JSON.parse(e.target.value))
-                  }
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* LEFT SIDE */}
+        <section className="lg:col-span-8 space-y-6">
+          {/* SAVED ADDRESSES */}
+          {savedAddresses.length > 0 && (
+            <div>
+              <label className="text-sm text-gray-600">
+                Select saved address
+              </label>
+              <select
+                className="w-full bg-white mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none text-sm"
+                value={JSON.stringify(shippingAddress)}
+                onChange={(e) =>
+                  setShippingAddress(JSON.parse(e.target.value))
+                }
+              >
+                {savedAddresses.slice(0, 5).map((addr, idx) => (
+                  <option key={idx} value={JSON.stringify(addr)}>
+                    {addr.fullName}, {addr.street}, {addr.city}, {addr.state},{" "}
+                    {addr.postalCode}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* SHIPPING DETAILS */}
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow p-4 sm:p-6"
+          >
+            <h2 className="text-base sm:text-lg font-semibold mb-4">
+              Shipping Details
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { label: "Full name", name: "fullName", placeholder: "John Doe" },
+                { label: "Phone", name: "phone", placeholder: "+91 98765 43210" },
+                { label: "Street / Address", name: "street", placeholder: "Flat, Building, Area" },
+                { label: "City", name: "city" },
+                { label: "State", name: "state" },
+                { label: "Postal Code", name: "postalCode" },
+                { label: "Country", name: "country" },
+              ].map((field, i) => (
+                <div
+                  key={field.name}
+                  className={i === 2 ? "sm:col-span-2" : ""}
                 >
-                  {savedAddresses.slice(0, 5).map((addr, idx) => (
-                    <option key={idx} value={JSON.stringify(addr)}>
-                      {addr.fullName}, {addr.street}, {addr.city}, {addr.state},{" "}
-                      {addr.postalCode}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* --- SHIPPING FORM (unchanged) --- */}
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow p-6"
-            >
-              <h2 className="text-lg font-semibold mb-4">Shipping Details</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="col-span-1">
-                  <label className="text-sm text-gray-600">Full name</label>
+                  <label className="text-sm text-gray-600">{field.label}</label>
                   <input
-                    id="po-fullName"
-                    name="fullName"
-                    value={shippingAddress.fullName}
+                    name={field.name}
+                    value={shippingAddress[field.name]}
                     onChange={handleChange}
                     className={`w-full mt-1 px-4 py-2 rounded-lg border ${
-                      errors.fullName ? "border-red-400" : "border-gray-200"
-                    } focus:ring-2 focus:ring-blue-400 outline-none`}
-                    placeholder="John Doe"
+                      errors[field.name]
+                        ? "border-red-400"
+                        : "border-gray-200"
+                    } focus:ring-2 focus:ring-blue-400 outline-none text-sm`}
+                    placeholder={field.placeholder || ""}
                   />
-                  {errors.fullName && (
+                  {errors[field.name] && (
                     <p className="text-xs text-red-500 mt-1">
-                      {errors.fullName}
+                      {errors[field.name]}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="text-sm text-gray-600">Phone</label>
-                  <input
-                    name="phone"
-                    value={shippingAddress.phone}
-                    onChange={handleChange}
-                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${
-                      errors.phone ? "border-red-400" : "border-gray-200"
-                    } focus:ring-2 focus:ring-blue-400 outline-none`}
-                    placeholder="+91 98765 43210"
-                  />
-                  {errors.phone && (
-                    <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">
-                    Street / Address
-                  </label>
-                  <input
-                    name="street"
-                    value={shippingAddress.street}
-                    onChange={handleChange}
-                    className={`w-full mt-1 px-4 py-2 rounded-lg border ${
-                      errors.street ? "border-red-400" : "border-gray-200"
-                    } focus:ring-2 focus:ring-blue-400 outline-none col-span-2`}
-                    placeholder="Flat, Building, Area"
-                  />
-                  {errors.street && (
-                    <p className="text-xs text-red-500 mt-1">{errors.street}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">City</label>
-                  <input
-                    name="city"
-                    value={shippingAddress.city}
-                    onChange={handleChange}
-                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">State</label>
-                  <input
-                    name="state"
-                    value={shippingAddress.state}
-                    onChange={handleChange}
-                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Postal Code</label>
-                  <input
-                    name="postalCode"
-                    value={shippingAddress.postalCode}
-                    onChange={handleChange}
-                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600">Country</label>
-                  <input
-                    name="country"
-                    value={shippingAddress.country}
-                    onChange={handleChange}
-                    className="w-full mt-1 px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-400 outline-none"
-                  />
-                </div>
-              </div>
-            </motion.div>
-            {/* --- SHIPPING METHOD (unchanged) --- */}
-            <motion.div
-              className="bg-white rounded-2xl shadow p-6"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h2 className="text-lg font-semibold mb-4">Shipping Method</h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {[
-                  {
-                    id: "standard",
-                    label: "Standard (3–5 days)",
-                    price: defaultShipping,
-                    desc: "Free delivery above ₹999",
-                  },
-                  {
-                    id: "express",
-                    label: "Express (1–2 days)",
-                    price: 199,
-                    desc: "Faster delivery",
-                  },
-                  {
-                    id: "overnight",
-                    label: "Overnight",
-                    price: 499,
-                    desc: "Next-day delivery",
-                  },
-                ].map((s) => (
-                  <motion.button
-                    key={s.id}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setShippingMethod(s)}
-                    className={`relative text-left p-3 rounded-lg border transition-all duration-300 ease-out ${
-                      shippingMethod?.id === s.id
-                        ? "border-blue-600 bg-blue-50 shadow-sm"
-                        : "border-gray-200 hover:border-blue-300"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-800">
-                          {s.label}
-                        </div>
-                        <div className="text-xs text-gray-500">{s.desc}</div>
-                      </div>
-                      <div className="text-sm font-semibold text-gray-800">
-                        ₹{s.price}
-                      </div>
-                    </div>
-
-                    {/* Selected Check Icon */}
-                    {shippingMethod?.id === s.id && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 18,
-                        }}
-                        className="absolute top-1 right-3 text-blue-600"
-                      >
-                        <FaCheckCircle size={18} />
-                      </motion.div>
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="bg-white rounded-2xl shadow p-6"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { id: "COD", label: "Cash on Delivery", icon: FaTruck },
-                  { id: "Card", label: "Card", icon: FaCreditCard },
-                  { id: "UPI", label: "UPI", icon: FaMobileAlt },
-                  { id: "NetBanking", label: "Netbanking", icon: FaUniversity },
-                ].map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => setPaymentMethod(m.id)}
-                    className={`p-3 rounded-lg border flex items-center gap-3 transition ${
-                      paymentMethod === m.id
-                        ? "border-blue-600 bg-blue-50"
-                        : "border-gray-200 hover:border-blue-300"
-                    }`}
-                  >
-                    <m.icon />
-                    <div className="text-left">
-                      <div className="text-sm font-medium">{m.label}</div>
-                      <div className="text-xs text-gray-500">
-                        {m.id === "COD" ? "Pay on delivery" : "Pay securely"}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={handlePlaceOrder}
-                disabled={loading}
-                className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:scale-[1.01] transition disabled:opacity-60"
-              >
-                <span>{loading ? "Processing…" : "Place Order"}</span>
-                <FaAngleRight />
-              </button>
+              ))}
             </div>
-          </section>
+          </motion.div>
 
-          {/* RIGHT: order summary */}
-          <aside className="md:col-span-4">
-            <motion.div
-              className="sticky mt-7 top-43 bg-white rounded-xl shadow p-6"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h3 className="text-lg font-semibold">Order Summary</h3>
+          {/* SHIPPING METHOD */}
+          <motion.div
+            className="bg-white rounded-2xl shadow p-4 sm:p-6"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h2 className="text-base sm:text-lg font-semibold mb-4">
+              Shipping Method
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                {
+                  id: "standard",
+                  label: "Standard (3–5 days)",
+                  price: defaultShipping,
+                  desc: "Free delivery above ₹999",
+                },
+                {
+                  id: "express",
+                  label: "Express (1–2 days)",
+                  price: 199,
+                  desc: "Faster delivery",
+                },
+                {
+                  id: "overnight",
+                  label: "Overnight",
+                  price: 499,
+                  desc: "Next-day delivery",
+                },
+              ].map((s) => (
+                <motion.button
+                  key={s.id}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setShippingMethod(s)}
+                  className={`relative text-left p-3 rounded-lg border transition-all ${
+                    shippingMethod?.id === s.id
+                      ? "border-blue-600 bg-blue-50 shadow-sm"
+                      : "border-gray-200 hover:border-blue-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-800 text-sm sm:text-base">
+                        {s.label}
+                      </div>
+                      <div className="text-xs text-gray-500">{s.desc}</div>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-800">
+                      ₹{s.price}
+                    </div>
+                  </div>
 
-              <div className="mt-4 divide-y divide-gray-100">
-                <div className="space-y-3 max-h-64 overflow-y-auto py-2">
-                  {cartItems.map((it) => (
-                    <div
-                      key={it.productId}
-                      className="flex items-center justify-between gap-3 py-2"
+                  {shippingMethod?.id === s.id && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 18,
+                      }}
+                      className="absolute top-1 right-3 text-blue-600"
                     >
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={it.image}
-                          alt={it.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                        <div>
-                          <div className="text-sm font-medium max-w-[180px] truncate">
-                            {it.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {it.quantity} × ₹{it.price}
-                          </div>
+                      <FaCheckCircle size={16} />
+                    </motion.div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* PAYMENT METHOD */}
+          <motion.div
+            className="bg-white rounded-2xl shadow p-4 sm:p-6"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h2 className="text-base sm:text-lg font-semibold mb-4">
+              Payment Method
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { id: "COD", label: "Cash", icon: FaTruck },
+                { id: "Card", label: "Card", icon: FaCreditCard },
+                { id: "UPI", label: "UPI", icon: FaMobileAlt },
+                { id: "NetBanking", label: "Bank", icon: FaUniversity },
+              ].map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => setPaymentMethod(m.id)}
+                  className={`p-3 rounded-lg border flex items-center gap-3 transition text-sm ${
+                    paymentMethod === m.id
+                      ? "border-blue-600 bg-blue-50"
+                      : "border-gray-200 hover:border-blue-300"
+                  }`}
+                >
+                  <m.icon />
+                  <div className="text-left">
+                    <div className="font-medium">{m.label}</div>
+                    <div className="text-xs text-gray-500">
+                      {m.id === "COD" ? "Pay on delivery" : "Pay securely"}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          <div className="flex justify-end">
+            <button
+              onClick={handlePlaceOrder}
+              disabled={loading}
+              className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-full shadow-lg hover:scale-[1.02] transition disabled:opacity-60 text-sm sm:text-base"
+            >
+              <span>{loading ? "Processing…" : "Place Order"}</span>
+              <FaAngleRight />
+            </button>
+          </div>
+        </section>
+
+        {/* RIGHT SIDE */}
+        <aside className="lg:col-span-4">
+          <motion.div
+            className="sticky mt-6 top-28 bg-white rounded-xl shadow p-4 sm:p-6"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h3 className="text-base sm:text-lg font-semibold">
+              Order Summary
+            </h3>
+
+            <div className="mt-4 divide-y divide-gray-100">
+              <div className="space-y-3 max-h-64 overflow-y-auto py-2">
+                {cartItems.map((it) => (
+                  <div
+                    key={it.productId}
+                    className="flex items-center justify-between gap-3 py-2"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={it.image}
+                        alt={it.name}
+                        className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded"
+                      />
+                      <div>
+                        <div className="text-sm font-medium max-w-[160px] truncate">
+                          {it.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {it.quantity} × ₹{it.price}
                         </div>
                       </div>
-                      <div className="font-semibold">
-                        ₹{it.price * it.quantity}
-                      </div>
                     </div>
-                  ))}
-                </div>
-
-                <div className="pt-4">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span>
-                    <span>₹{subtotal}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600 mt-1">
-                    <span>Shipping</span>
-                    <span>₹{shippingCost}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600 mt-1">
-                    <span>Taxes & fees</span>
-                    <span>₹{taxes}</span>
-                  </div>
-
-                  <div className="border-t mt-4 pt-3 flex justify-between items-center">
-                    <div>
-                      <div className="text-sm text-gray-500">Total</div>
-                      <div className="text-2xl font-bold">₹{grandTotal}</div>
+                    <div className="font-semibold text-sm sm:text-base">
+                      ₹{it.price * it.quantity}
                     </div>
-                    <div className="text-xs text-gray-400">Incl. all taxes</div>
                   </div>
-
-                  <div className="mt-4">
-                    <button className="w-full py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">
-                      Apply Coupon
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
-            </motion.div>
-          </aside>
-        </div>
 
-        {/* Success overlay */}
-        {showSuccess && (
-          <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-white p-8 rounded-2xl shadow-2xl w-[420px] text-center"
-            >
-              <div className="flex flex-col items-center gap-4">
-                <FaCheckCircle className="text-green-600 text-5xl" />
-                <h2 className="text-2xl font-bold">Order Confirmed</h2>
-                <p className="text-gray-600">
-                  {successPayload?.order?.paymentMethod === "COD"
-                    ? "Thank you — your order has been placed and will be collected on delivery."
-                    : "Thank you — your payment is confirmed and your order is being processed."}
-                </p>
+              <div className="pt-4 text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal}</span>
+                </div>
+                <div className="flex justify-between mt-1 text-gray-600">
+                  <span>Shipping</span>
+                  <span>₹{shippingCost}</span>
+                </div>
+                <div className="flex justify-between mt-1 text-gray-600">
+                  <span>Taxes & fees</span>
+                  <span>₹{taxes}</span>
+                </div>
+
+                <div className="border-t mt-4 pt-3 flex justify-between items-center">
+                  <div>
+                    <div className="text-sm text-gray-500">Total</div>
+                    <div className="text-xl sm:text-2xl font-bold">
+                      ₹{grandTotal}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    Incl. all taxes
+                  </div>
+                </div>
+
                 <div className="mt-4">
-                  <button
-                    onClick={() => navigate("/")}
-                    className="px-5 py-2 bg-blue-600 text-white rounded-lg"
-                  >
-                    Go back To Home
+                  <button className="w-full py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50">
+                    Apply Coupon
                   </button>
                 </div>
               </div>
-            </motion.div>
-          </div>
-        )}
+            </div>
+          </motion.div>
+        </aside>
       </div>
+
+      {/* SUCCESS OVERLAY */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-3">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md text-center"
+          >
+            <div className="flex flex-col items-center gap-4">
+              <FaCheckCircle className="text-green-600 text-5xl" />
+              <h2 className="text-xl sm:text-2xl font-bold">
+                Order Confirmed
+              </h2>
+              <p className="text-gray-600 text-sm sm:text-base">
+                {successPayload?.order?.paymentMethod === "COD"
+                  ? "Thank you — your order has been placed and will be collected on delivery."
+                  : "Thank you — your payment is confirmed and your order is being processed."}
+              </p>
+              <div className="mt-4">
+                <button
+                  onClick={() => navigate("/")}
+                  className="px-5 py-2 bg-blue-600 text-white rounded-lg"
+                >
+                  Go back To Home
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
+
 }

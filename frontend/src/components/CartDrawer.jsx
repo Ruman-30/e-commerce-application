@@ -14,10 +14,8 @@ const CartDrawer = ({
 }) => {
   const navigate = useNavigate();
 
-  // Helper function to shorten long names
-  const truncateName = (name, maxLength = 35) => {
-    return name.length > maxLength ? name.slice(0, maxLength) + "..." : name;
-  };
+  const truncateName = (name, maxLength = 35) =>
+    name.length > maxLength ? name.slice(0, maxLength) + "..." : name;
 
   return (
     <AnimatePresence>
@@ -29,14 +27,14 @@ const CartDrawer = ({
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="relative w-full sm:w-1/2 max-w-lg h-full bg-white shadow-2xl flex flex-col overflow-hidden"
+            className="relative w-full sm:w-[90%] md:w-[400px] lg:w-[380px] h-full bg-white shadow-2xl flex flex-col overflow-hidden"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b">
+            <div className="flex items-center justify-between p-4 border-b bg-gray-50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-600 rounded-lg text-white flex items-center justify-center">
                   <svg
@@ -45,7 +43,7 @@ const CartDrawer = ({
                     viewBox="0 0 24 24"
                     strokeWidth={2}
                     stroke="currentColor"
-                    className="w-6 h-6"
+                    className="w-5 h-5"
                   >
                     <path
                       strokeLinecap="round"
@@ -55,12 +53,8 @@ const CartDrawer = ({
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Your Cart
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Review your selected items
-                  </p>
+                  <h2 className="text-lg font-bold text-gray-800">Your Cart</h2>
+                  <p className="text-xs text-gray-500">Review your selected items</p>
                 </div>
               </div>
               <button
@@ -72,60 +66,60 @@ const CartDrawer = ({
             </div>
 
             {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {cartItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full">
                   <img
                     src="https://cdni.iconscout.com/illustration/premium/thumb/empty-cart-illustration-svg-download-png-6024626.png"
                     alt="Empty Cart"
-                    className="w-40 h-40 object-contain mb-4"
+                    className="w-28 h-28 object-contain mb-3"
                   />
-                  <p className="text-gray-500 text-lg font-medium">
+                  <p className="text-gray-500 text-sm font-medium">
                     Your cart is empty
                   </p>
                 </div>
               ) : (
                 <>
                   {cartItems.map((item) => (
-                    console.log(item),
-                    
                     <div
                       key={item.productId}
-                      className="flex items-center justify-between border-b pb-4"
+                      className="flex items-center justify-between border-b pb-3 gap-3"
                     >
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-3 w-2/3">
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-16 h-16 object-cover rounded"
+                          className="w-14 h-14 object-cover rounded"
                         />
-                        <div>
-                          <h3 className="font-semibold">
-                            {truncateName(item.name)}
+                        <div className="text-sm">
+                          <h3 className="font-semibold text-gray-800">
+                            {truncateName(item.name, 20)}
                           </h3>
-                          <p className="text-gray-600">
+                          <p className="text-gray-600 text-xs">
                             ₹{item.price} × {item.quantity}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleQuantityChange(item, -1)}
-                          className="px-2 py-1 bg-gray-200 rounded cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span>{item.quantity}</span>
-                        <button
-                          onClick={() => handleQuantityChange(item, 1)}
-                          className="px-2 py-1 bg-gray-200 rounded cursor-pointer"
-                        >
-                          +
-                        </button>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleQuantityChange(item, -1)}
+                            className="px-2 py-1 bg-gray-200 rounded text-sm"
+                          >
+                            -
+                          </button>
+                          <span className="text-sm">{item.quantity}</span>
+                          <button
+                            onClick={() => handleQuantityChange(item, 1)}
+                            className="px-2 py-1 bg-gray-200 rounded text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
                         <button
                           onClick={() => handleRemoveItem(item.productId)}
-                          className="px-2 py-1 bg-red-400 text-white rounded ml-2 cursor-pointer hover:bg-red-500 transition"
+                          className="text-red-500 text-xs hover:underline mt-1"
                         >
                           Remove
                         </button>
@@ -134,31 +128,31 @@ const CartDrawer = ({
                   ))}
 
                   {/* Cart Summary */}
-                  <div className="mt-6 border-t pt-4">
-                    <p className="flex justify-between text-lg font-semibold">
+                  <div className="mt-6 border-t pt-4 text-sm">
+                    <p className="flex justify-between font-semibold">
                       <span>Total Items:</span>
                       <span>{totalItems}</span>
                     </p>
-                    <p className="flex justify-between text-lg font-semibold">
+                    <p className="flex justify-between font-semibold mt-1">
                       <span>Total Amount:</span>
                       <span>₹{displayTotal}</span>
                     </p>
                   </div>
 
-                  {/* Cart Actions */}
-                  <div className="flex flex-col gap-3 mt-6">
+                  {/* Actions */}
+                  <div className="flex flex-col gap-2 mt-5">
                     <button
                       onClick={() => {
                         navigate("/checkout");
                         onClose();
                       }}
-                      className="w-full bg-blue-800 text-white py-3 rounded-lg hover:bg-blue-900 transition cursor-pointer"
+                      className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm"
                     >
-                      Place Order
+                      Proceed to Checkout
                     </button>
                     <button
                       onClick={handleClearCart}
-                      className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition cursor-pointer"
+                      className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition text-sm"
                     >
                       Clear Cart
                     </button>
