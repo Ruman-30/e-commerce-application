@@ -53,7 +53,7 @@ export async function createOrderController(req, res) {
     );
     // ✅ Use frontend-provided values if available
     const shippingMethodFromClient = req.body.shippingMethod || "standard";
-    console.log(shippingMethodFromClient);
+    // console.log(shippingMethodFromClient);
 
     const shippingPrice = req.body.shippingPrice ?? 49;
     const taxPrice =

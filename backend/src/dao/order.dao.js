@@ -21,9 +21,15 @@ export async function findOrdersByUser(userId, { page = 1, limit = 10 }) {
 }
 
 export async function updateOrderStatus(orderId, status) {
+  const updateData = { status };
+  if (status === "Delivered") {
+    updateData.deliveredAt = new Date();
+    updateData.isPaid = true;
+  }
   return await orderModel
-    .findByIdAndUpdate(orderId, { status }, { new: true })
+    .findByIdAndUpdate(orderId, updateData, { new: true })
     .populate("user", "name email")
+
 }
 
 export async function findOrderSummaries({ page = 1, limit = 10 }, filter = {}) {
