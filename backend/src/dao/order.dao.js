@@ -23,8 +23,10 @@ export async function findOrdersByUser(userId, { page = 1, limit = 10 }) {
 export async function updateOrderStatus(orderId, status) {
   const updateData = { status };
   if (status === "Delivered") {
+    updateData.isDelivered = true;
     updateData.deliveredAt = new Date();
     updateData.isPaid = true;
+    updateData.paidAt = new Date();
   }
   return await orderModel
     .findByIdAndUpdate(orderId, updateData, { new: true })
