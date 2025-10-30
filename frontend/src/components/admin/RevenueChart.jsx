@@ -63,7 +63,7 @@ const RevenueChart = () => {
             <XAxis
               dataKey="month"
               tick={{ fontSize: 12 }}
-              angle={-15}
+              // angle={-15}
               interval={0}
               height={40}
             />

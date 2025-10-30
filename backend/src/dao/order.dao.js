@@ -27,6 +27,7 @@ export async function updateOrderStatus(orderId, status) {
     updateData.deliveredAt = new Date();
     updateData.isPaid = true;
     updateData.paidAt = new Date();
+    updateData["payment.paymentStatus"] = "Paid";
   }
   return await orderModel
     .findByIdAndUpdate(orderId, updateData, { new: true })
