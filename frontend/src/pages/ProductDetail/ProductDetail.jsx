@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { addItemToCart } from "../../features/cartSlice";
 import LoadingModal from "../../components/LoadingModal";
+import { motion } from "framer-motion";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -126,13 +127,17 @@ export default function ProductDetail() {
     if (!desc) return "";
     return desc.length > maxLength ? desc.slice(0, maxLength) + "..." : desc;
   };
+  const trimName = (name, maxLength = 20) => {
+    if (!name) return "";
+    return name.length > maxLength ? name.slice(0, maxLength) + "..." : name;
+  };
 
   return (
     <>
       <Navbar />
       <div className="max-w-7xl mx-auto px-3 sm:px-5 md:px-6 py-8 pt-16 sm:pt-20 md:pt-28">
         {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Images */}
           <div>
             <Swiper
@@ -148,11 +153,11 @@ export default function ProductDetail() {
             >
               {product.images?.map((img, i) => (
                 <SwiperSlide key={i}>
-                  <div className="w-full h-[45vh] sm:h-[50vh] md:h-[60vh] flex items-center justify-center bg-gray-50 rounded-lg">
+                  <div className="w-full h-[40vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh] flex items-center justify-center bg-gray-50 rounded-lg">
                     <img
                       src={img.url || img}
                       alt={product.name}
-                      className="max-w-[80%] max-h-full object-contain rounded-lg"
+                      className="max-w-[85%] max-h-full object-contain rounded-lg"
                     />
                   </div>
                 </SwiperSlide>
@@ -160,7 +165,7 @@ export default function ProductDetail() {
             </Swiper>
 
             {/* Thumbnails */}
-            <div className="flex gap-2 md:gap-4 justify-center flex-wrap">
+            <div className="flex gap-2 sm:gap-3 md:gap-4 justify-center flex-wrap">
               {product.images?.map((img, i) => (
                 <img
                   key={i}
@@ -168,7 +173,7 @@ export default function ProductDetail() {
                   alt="thumbnail"
                   onMouseEnter={() => swiperRef.current?.slideToLoop(i)}
                   onClick={() => swiperRef.current?.slideToLoop(i)}
-                  className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover border rounded-md cursor-pointer transition ${
+                  className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 object-cover border rounded-md cursor-pointer transition ${
                     activeIndex === i ? "border-blue-500" : "border-gray-300"
                   }`}
                 />
@@ -177,24 +182,28 @@ export default function ProductDetail() {
           </div>
 
           {/* Right: Details */}
-          <div className="flex flex-col">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">
+          <div className="flex flex-col mt-8 lg:mt-0 px-2 sm:px-4 md:px-0">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold mb-2 text-gray-900">
               {product.name}
             </h1>
+
             <div className="flex items-center mb-3">
-              <span className="text-yellow-500 text-lg">
+              <span className="text-yellow-500 text-base sm:text-lg">
                 ★ {product.averageRating?.toFixed(1) || 0}
               </span>
-              <span className="ml-2 text-gray-500 text-sm sm:text-base">
+              <span className="ml-2 text-gray-500 text-xs sm:text-sm md:text-base">
                 ({product.numOfReviews || 0} reviews)
               </span>
             </div>
+
             <p className="text-blue-600 font-semibold text-lg sm:text-xl md:text-2xl mb-3">
               ₹{product.price}
             </p>
+
             <p className="text-gray-700 mb-3 text-sm sm:text-base leading-relaxed">
               {trimDesc(product.description, 500)}
             </p>
+
             <p
               className={`mb-4 font-medium ${
                 product.stock > 0 ? "text-green-600" : "text-red-600"
@@ -355,46 +364,71 @@ export default function ProductDetail() {
 
         {/* Related Products */}
         <div className="mt-10 sm:mt-12">
-          <h2 className="text-lg sm:text-xl font-bold mb-4">
+          <h2 className="text-lg sm:text-xl font-bold mb-4 text-gray-800">
             Related Products
           </h2>
+
           {relatedProducts.length === 0 ? (
             <p className="text-gray-600">No related products found.</p>
           ) : (
             <Swiper
-              spaceBetween={20}
+              spaceBetween={16}
               navigation
               modules={[Navigation]}
               breakpoints={{
-                0: {
-                  slidesPerView: 1, // mobile
-                },
-                768: {
-                  slidesPerView: 3, // tablet
-                },
-                1024: {
-                  slidesPerView: 4, // desktop
-                },
+                0: { slidesPerView: 1.2 }, // mobile
+                480: { slidesPerView: 2 }, // foldable phones
+                768: { slidesPerView: 3 }, // tablets
+                1024: { slidesPerView: 4 }, // desktops
               }}
+              className="pb-6"
             >
-              {relatedProducts.map((product, index) => (
-                <SwiperSlide key={index}>
-                  <div
+              {relatedProducts.map((product) => (
+                <SwiperSlide key={product._id}>
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 40 },
+                      visible: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { duration: 0.5 },
+                      },
+                    }}
+                    whileHover={{
+                      scale: 1.01,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+                    }}
                     onClick={() => navigate(`/products/${product._id}`)}
-                    className="bg-white rounded-lg shadow hover:shadow-lg transition p-3 cursor-pointer"
+                    className="flex flex-col bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100"
                   >
-                    <img
-                      src={product.images?.[0]?.url || "/placeholder.png"}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-md"
-                    />
-                    <div className="mt-2">
-                      <h3 className="font-semibold text-gray-800">
-                        {product.name}
+                    <motion.div className="w-full h-40 sm:h-48">
+                      <motion.img
+                        src={product.images?.[0]?.url || "/placeholder.png"}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </motion.div>
+
+                    <div className="p-3 flex flex-col justify-between flex-1">
+                      <h3 className="text-sm sm:text-base font-semibold text-gray-800">
+                        {trimName(product.name)}
                       </h3>
-                      <p className="text-gray-600">${product.price}</p>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-blue-600 font-bold text-sm sm:text-base">
+                          ₹{product.price}
+                        </p>
+                        <div className="flex flex-col items-end text-xs text-gray-600">
+                          <span className="text-yellow-500 font-semibold">
+                            ⭐ {product.averageRating?.toFixed(1) || 0}
+                          </span>
+                          <span>{product.numOfReviews || 0} Reviews</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </SwiperSlide>
               ))}
             </Swiper>
