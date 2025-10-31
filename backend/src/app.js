@@ -24,6 +24,9 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use(passport.initialize());
 app.use(cookieParser())
+app.get("/ping", (req, res) => {
+  res.status(200).json({ message: "Server is alive 🚀" });
+});
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use("/auth", userRoutes)
 app.use("/admin", adminRoutes)
