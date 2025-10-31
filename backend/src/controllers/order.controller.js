@@ -19,12 +19,6 @@ import { createRazorpayOrder } from "../services/payment.service.js";
 
 export async function createOrderController(req, res) {
   try {
-    if (!req.user || !req.user._id) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized. Please log in again." });
-    }
-
     const userId = req.user._id;
     const { shippingAddress, paymentMethod, shippingMethod } = req.body;
 
@@ -99,10 +93,10 @@ export async function createOrderController(req, res) {
       );
 
       await clearCart(userId);
-      await sendOrderConfirmationEmail({
-        userEmail: req.user.email,
-        order: newOrder,
-      });
+      // await sendOrderConfirmationEmail({
+      //   userEmail: req.user.email,
+      //   order: newOrder,
+      // });
 
       return res
         .status(201)

@@ -200,16 +200,6 @@ export default function PlaceOrderModern() {
       return;
     }
 
-    // ✅ Check that cookies exist (auth cookies like accessToken)
-    const hasAuthCookie =
-      document.cookie.includes("accessToken") ||
-      document.cookie.includes("refreshToken");
-
-    if (!hasAuthCookie) {
-      toast.error("Session expired — please log in again.");
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -225,10 +215,11 @@ export default function PlaceOrderModern() {
       const taxPrice = Math.round((itemsPrice + shippingPrice) * 0.05);
       const totalAmount = Math.round(itemsPrice + shippingPrice + taxPrice);
 
+      // ✅ Make sure we're using the latest state value here
       const payload = {
         shippingAddress,
         paymentMethod,
-        shippingMethod,
+        shippingMethod, // <-- now correct
         itemsPrice,
         shippingPrice,
         taxPrice,
@@ -242,14 +233,10 @@ export default function PlaceOrderModern() {
         })),
       };
 
-      // ✅ No manual token, just ensure credentials are sent
-      const { data } = await api.post("/order", payload, {
-        withCredentials: true, // sends both tokens automatically
-      });
-
+      const { data } = await api.post("/order", payload);
       const { order, razorpayOrder, message } = data;
 
-      // --- Save order locally (no changes) ---
+      // --- Save address locally ---
       try {
         const savedOrders = JSON.parse(
           localStorage.getItem("savedOrders") || "[]"

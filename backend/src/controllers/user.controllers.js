@@ -61,6 +61,7 @@ export async function createUserRegisterController(req, res) {
         role: user.role,
       },
       accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,    
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -114,6 +115,7 @@ export async function createUserLoginController(req, res) {
       role: user.role,
     },
     accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
   });
 }
 
