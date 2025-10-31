@@ -19,6 +19,12 @@ import { createRazorpayOrder } from "../services/payment.service.js";
 
 export async function createOrderController(req, res) {
   try {
+    if (!req.user || !req.user._id) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. Please log in again." });
+    }
+
     const userId = req.user._id;
     const { shippingAddress, paymentMethod, shippingMethod } = req.body;
 
@@ -57,7 +63,8 @@ export async function createOrderController(req, res) {
 
     const shippingPrice = req.body.shippingPrice ?? 49;
     const taxPrice =
-      req.body.taxPrice ?? Math.ceil(Math.round((itemsPrice + shippingPrice) * 0.05)); // ✅ round to nearest integer
+      req.body.taxPrice ??
+      Math.ceil(Math.round((itemsPrice + shippingPrice) * 0.05)); // ✅ round to nearest integer
     const totalAmount =
       req.body.totalAmount ?? Math.ceil(itemsPrice + shippingPrice + taxPrice);
 
