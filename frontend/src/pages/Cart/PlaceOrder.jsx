@@ -116,77 +116,101 @@ export default function PlaceOrderModern() {
     setShippingAddress((s) => ({ ...s, [e.target.name]: e.target.value }));
     setErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
   };
+  // ------------------- Shared success handler -------------------
+  const handleOrderSuccess = async (order, payment = null, msg) => {
+    setSuccessPayload({ order, payment });
+    setShowSuccess(true);
 
-  const openRazorpay = async (razorpayOrder, orderDbRecord) => {
-    if (!window.Razorpay) {
-      toast.error(
-        'Razorpay script not loaded. Add <script src="https://checkout.razorpay.com/v1/checkout.js"></script>'
-      );
-      return;
-    }
+    try {
+      const confettiModule = await import("canvas-confetti");
+      confettiModule.default({
+        particleCount: 160,
+        spread: 80,
+        origin: { y: 0.6 },
+      });
+    } catch (_) {}
 
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || "",
-      amount: razorpayOrder.amount,
-      currency: razorpayOrder.currency || "INR",
-      name: "UrbanCart",
-      description: `Order • ${orderDbRecord._id}`,
-      order_id: razorpayOrder.id,
-      prefill: {
-        name: shippingAddress.fullName || user?.name || "",
-        email: user?.email || "",
-        contact: shippingAddress.phone || user?.phone || "",
-      },
-      notes: {
-        subtotal: subtotal,
-        shipping: shippingMethod.id,
-      },
-      theme: { color: "#2563eb" },
-      handler: async function (response) {
-        setLoading(true);
-        try {
-          await api.post("/payment/verify-payment", {
-            orderId: orderDbRecord._id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-          });
-
-          setSuccessPayload({ order: orderDbRecord, payment: response });
-          setShowSuccess(true);
-          try {
-            const confettiModule = await import("canvas-confetti");
-            confettiModule.default({
-              particleCount: 160,
-              spread: 80,
-              origin: { y: 0.6 },
-            });
-          } catch (_) {}
-
-          dispatch(clearCartBackend());
-          localStorage.removeItem("checkoutData");
-          toast.success("Payment successful — order confirmed!");
-        } catch (err) {
-          console.error("Verify error:", err?.response || err);
-          toast.error(
-            err?.response?.data?.message || "Payment verification failed"
-          );
-        } finally {
-          setLoading(false);
-        }
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-
-    rzp.on("payment.failed", function (response) {
-      console.error("Razorpay failed:", response);
-      toast.error(response?.error?.description || "Payment failed");
-    });
-
-    rzp.open();
+    dispatch(clearCartBackend());
+    localStorage.removeItem("checkoutData");
+    toast.success(msg || "Order placed successfully!");
   };
 
+  // ------------------- openRazorpay (Promise) -------------------
+  const openRazorpay = (razorpayOrder, orderDbRecord) => {
+    return new Promise((resolve, reject) => {
+      if (!window.Razorpay) {
+        toast.error(
+          'Razorpay script not loaded. Add <script src="https://checkout.razorpay.com/v1/checkout.js"></script>'
+        );
+        return reject(new Error("Razorpay script not loaded"));
+      }
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "",
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency || "INR",
+        name: "UrbanCart",
+        description: `Order • ${orderDbRecord._id}`,
+        order_id: razorpayOrder.id,
+        prefill: {
+          name: shippingAddress.fullName || user?.name || "",
+          email: user?.email || "",
+          contact: shippingAddress.phone || user?.phone || "",
+        },
+        notes: {
+          subtotal,
+          shipping: shippingMethod.id,
+        },
+        theme: { color: "#2563eb" },
+
+        // 🧾 Razorpay success handler
+        handler: async function (response) {
+          setLoading(true);
+          try {
+            const { data } = await api.post("/payment/verify-payment", {
+              orderId: orderDbRecord._id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            if (data?.success) {
+              await handleOrderSuccess(
+                data.order || orderDbRecord,
+                response,
+                data.message || "Payment successful — order confirmed!"
+              );
+              resolve(data);
+            } else {
+              toast.error(data?.message || "Payment verification failed");
+              reject(new Error(data?.message || "Verification failed"));
+            }
+          } catch (err) {
+            console.error("Verify error:", err?.response || err);
+            toast.error(
+              err?.response?.data?.message || "Payment verification failed"
+            );
+            reject(err);
+          } finally {
+            setLoading(false);
+          }
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      // User cancels / fails
+      rzp.on("payment.failed", function (response) {
+        console.error("❌ Razorpay payment.failed:", response);
+        toast.error("Payment failed or cancelled — please try again.");
+        reject(new Error("Razorpay payment failed or cancelled"));
+      });
+
+      rzp.open();
+    });
+  };
+
+  // ------------------- Main handlePlaceOrder -------------------
   const handlePlaceOrder = async () => {
     if (!cartItems.length) {
       toast.warn("Your cart is empty — add items before placing an order.");
@@ -211,15 +235,15 @@ export default function PlaceOrderModern() {
           ) * 100
         ) / 100;
 
+      const subtotal = itemsPrice;
       const shippingPrice = shippingMethod.price;
       const taxPrice = Math.round((itemsPrice + shippingPrice) * 0.05);
       const totalAmount = Math.round(itemsPrice + shippingPrice + taxPrice);
 
-      // ✅ Make sure we're using the latest state value here
       const payload = {
         shippingAddress,
         paymentMethod,
-        shippingMethod, // <-- now correct
+        shippingMethod,
         itemsPrice,
         shippingPrice,
         taxPrice,
@@ -236,7 +260,7 @@ export default function PlaceOrderModern() {
       const { data } = await api.post("/order", payload);
       const { order, razorpayOrder, message } = data;
 
-      // --- Save address locally ---
+      // Save locally
       try {
         const savedOrders = JSON.parse(
           localStorage.getItem("savedOrders") || "[]"
@@ -253,40 +277,17 @@ export default function PlaceOrderModern() {
         console.warn("Failed to save order locally:", err);
       }
 
-      // --- COD Flow ---
+      // --- COD ---
       if (paymentMethod === "COD") {
-        toast.success(message || "Order placed (COD)");
-        dispatch(clearCartBackend());
-        localStorage.removeItem("checkoutData");
-        setSuccessPayload({ order, payment: null });
-        setShowSuccess(true);
-
-        try {
-          const confettiModule = await import("canvas-confetti");
-          confettiModule.default({
-            particleCount: 160,
-            spread: 80,
-            origin: { y: 0.6 },
-          });
-        } catch (_) {}
-
+        await handleOrderSuccess(order, null, message || "Order placed (COD)");
         return;
       }
 
-      // --- Razorpay Flow ---
+      // --- Razorpay ---
       if (razorpayOrder && order) {
-        if (
-          razorpayOrder.amount &&
-          Math.round(totalAmount * 100) !== razorpayOrder.amount
-        ) {
-          toast.info(
-            "Note: Razorpay transaction amount may be capped in test mode to allow checkout."
-          );
-        }
-
         await openRazorpay(razorpayOrder, order);
       } else {
-        throw new Error("Payment init failed, try again");
+        throw new Error("Payment initialization failed. Please try again.");
       }
     } catch (err) {
       console.error("Place order error:", err?.response || err);

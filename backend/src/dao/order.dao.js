@@ -73,23 +73,21 @@ export async function findOrder(orderId){
 }
 
 export async function updateOrderPayment(orderId, paymentData) {
+  if (!orderId) throw new Error("Missing orderId in updateOrderPayment.");
+
   const update = {};
 
-  if (paymentData.razorpay_order_id) {
+  if (paymentData.razorpay_order_id)
     update["payment.razorpay_order_id"] = paymentData.razorpay_order_id;
-  }
-  if (paymentData.razorpay_payment_id) {
+  if (paymentData.razorpay_payment_id)
     update["payment.razorpay_payment_id"] = paymentData.razorpay_payment_id;
-  }
-  if (paymentData.razorpay_signature) {
+  if (paymentData.razorpay_signature)
     update["payment.razorpay_signature"] = paymentData.razorpay_signature;
-  }
 
   if (paymentData.paymentStatus) {
     update["payment.paymentStatus"] = paymentData.paymentStatus;
     update["paymentStatus"] = paymentData.paymentStatus;
 
-    // If payment is successful, mark as paid
     if (paymentData.paymentStatus === "Paid") {
       update["isPaid"] = true;
       update["paidAt"] = new Date();
