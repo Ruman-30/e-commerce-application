@@ -7,8 +7,8 @@ const isProduction = process.env.NODE_ENV === "production";
 const config = {
     PORT: process.env.PORT || 3000,
     MONGODB_URI: process.env.MONGODB_URI,
-    CLIENT_URL: isProduction ? process.env.CLIENT_URL : "http://localhost:5173",
-    BACKEND_URL: isProduction ? process.env.BACKEND_URL : "http://localhost:3000",
+    CLIENT_URL: process.env.CLIENT_URL,
+    BACKEND_URL: process.env.BACKEND_URL,
     JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
     COULD_NAME: process.env.COULD_NAME,
