@@ -137,7 +137,7 @@ export async function registerUserByGoogleController(req, res) {
       sameSite: "none",
       // maxAge: 15 * 60 * 1000, // 15 minutes
     });
-    res.redirect("http://localhost:5173/"); // replace with your frontend URL
+   res.redirect(`${config.CLIENT_URL}/?login=success`);
   } catch (error) {
     res.status(500).json({ message: "Something went wrong", error });
   }

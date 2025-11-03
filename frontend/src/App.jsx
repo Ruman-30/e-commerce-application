@@ -12,8 +12,22 @@ import AuthWrapper from "./components/AuthWrapper";
 import AdminRoute from "./components/AdminRoute";
 import AdminRegister from "./pages/Auth/AdminRegister";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
+import { useLocation } from "react-router-dom";
 const App = () => {
  
+   const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("login") === "success") {
+      toast.success("Login successful!");
+      // Optionally, clear the query param
+      window.history.replaceState({}, document.title, "/");
+    }
+  }, [location]);
+
   return (
     <AuthWrapper>
       <Routes>

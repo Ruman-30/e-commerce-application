@@ -6,7 +6,7 @@ import { createUserByGoogle, FindOneUser } from "../dao/user.dao.js";
 passport.use(new GoogleStrategy({
     clientID: config.GOOGLE_CLIENT_ID,
     clientSecret: config.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${config.CLIENT_URL}/auth/google/callback`,
+    callbackURL: `${config.BACKEND_URL}/auth/google/callback`,
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         // Find or create user in your database
