@@ -61,7 +61,7 @@ export async function createUserRegisterController(req, res) {
         role: user.role,
       },
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      refreshToken: tokens.refreshToken,    
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -137,9 +137,7 @@ export async function registerUserByGoogleController(req, res) {
       sameSite: "none",
       // maxAge: 15 * 60 * 1000, // 15 minutes
     });
-    res.redirect(
-      `${config.CLIENT_URL}/auth/success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`
-    );
+   res.redirect(`${config.CLIENT_URL}/?login=success`);
   } catch (error) {
     res.status(500).json({ message: "Something went wrong", error });
   }
@@ -251,25 +249,15 @@ export async function refreshTokenController(req, res) {
 
 export async function getCurrentUserController(req, res) {
   try {
-    // ✅ 1. Try to get token from cookies
-    let token = req.cookies?.accessToken;
+    const token = req.cookies?.accessToken;
 
-    // ✅ 2. If not found, try from Authorization header
-    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
-    // ✅ 3. If still no token, unauthorized
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-    // ✅ 4. Verify token
     const decoded = jwt.verify(token, config.JWT_ACCESS_SECRET);
-
-    // ✅ 5. Fetch user from DB
     const user = await findById(decoded.userId);
     if (!user) return res.status(401).json({ message: "User not found" });
+    console.log(user);
 
-    // ✅ 6. Send user details
     res.status(200).json({
       user: {
         id: user._id,
@@ -280,11 +268,9 @@ export async function getCurrentUserController(req, res) {
       token,
     });
   } catch (error) {
-    console.error("❌ Error verifying user:", error.message);
-    res.status(401).json({ message: "Invalid or expired token" });
+    res.status(401).json({ message: "Invalid token" });
   }
 }
-
 
 export async function getAllUsersController(req, res) {
   try {
