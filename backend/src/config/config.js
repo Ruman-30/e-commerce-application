@@ -2,8 +2,6 @@ import dotenv from "dotenv"
 import Razorpay from "razorpay"
 dotenv.config()
 
-const isProduction = process.env.NODE_ENV === "production";
-
 const config = {
     PORT: process.env.PORT || 3000,
     MONGODB_URI: process.env.MONGODB_URI,
