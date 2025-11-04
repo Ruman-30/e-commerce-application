@@ -14,7 +14,7 @@ import config from "./config/config.js"
 const app = express()
 import cors from "cors";
 app.use(cors({
-  origin: config.CLIENT_URL || "*", // or specify your frontend domain instead of "*"
+  origin: config.CLIENT_URL, // or specify your frontend domain instead of "*"
   methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true // allow cookies to be sent

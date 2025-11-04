@@ -152,7 +152,11 @@ const Register = () => {
 
         {/* Google OAuth */}
         <a
-          href="http://localhost:3000/auth/google"
+          href={
+            import.meta.env.MODE === "production"
+              ? "https://urbancart-backend-ifh2.onrender.com/auth/google"
+              : "http://localhost:3000/auth/google"
+          }
           className="w-full border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition"
         >
           <img
