@@ -138,7 +138,7 @@ export async function registerUserByGoogleController(req, res) {
       // maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.redirect(
-      `${config.FRONTEND_URL}/auth/success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`
+      `${config.CLIENT_URL}/auth/success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`
     );
   } catch (error) {
     res.status(500).json({ message: "Something went wrong", error });
