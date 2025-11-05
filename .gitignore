@@ -15,7 +15,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Build output
-dist/
+# dist/
 build/
 .next/
 out/
