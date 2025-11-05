@@ -11,6 +11,8 @@ import swaggerSpec from "./config/swagger.js"
 import swaggerUi from "swagger-ui-express"
 import passport from "./config/passport.js"
 import config from "./config/config.js"
+import path from "path";
+import { fileURLToPath } from "url";
 const app = express()
 import cors from "cors";
 app.use(cors({
@@ -35,4 +37,17 @@ app.use("/cart", cartRoutes)
 app.use("/order", orderRoutes)
 app.use("/payment", paymentRoutes)
 app.use("/review", reviewRoutes)
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve React build files
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+app.use((req, res, next) => {
+  res.sendFile(path.resolve(__dirname, "../frontend/dist", "index.html"));
+});
+
+
 export default app
