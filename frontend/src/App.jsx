@@ -15,7 +15,6 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
-// import AuthSuccess from "./components/AuthSuccess";
 const App = () => {
   const location = useLocation();
   
@@ -49,7 +48,6 @@ const App = () => {
             </AdminRoute>
           }
         />
-        {/* <Route path="/auth/success" element={<AuthSuccess />} /> */}
         <Route
           path="/"
           element={

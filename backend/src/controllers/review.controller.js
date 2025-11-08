@@ -10,7 +10,7 @@ import {
 import { findProductById } from "../dao/product.dao.js";
 import redis from "../config/redis.js";
 import { clearReviewCache } from "../utils/cacheUtils.js";
-
+import { clearProductCache } from "../utils/cacheUtils.js";
 export async function createReviewController(req, res) {
   try {
     const userId = req.user._id;
@@ -26,14 +26,16 @@ export async function createReviewController(req, res) {
     const isReviewExist = await findReview({ userId, productId });
     if (isReviewExist) {
       await updateReview({ userId, productId, comment, rating });
-      await clearReviewCache()
+      await clearReviewCache(productId)
+      await clearProductCache(productId)
       return res.status(200).json({
         message: "Review updated successfully.",
       });
     }
 
     const review = await createReview({ userId, productId, comment, rating });
-    await clearReviewCache()
+    await clearReviewCache(productId)
+    await clearProductCache(productId)
     res.status(201).json({
       message: "Review created successfully.",
       review,

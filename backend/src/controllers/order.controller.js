@@ -14,7 +14,7 @@ import {
   getProductPriceById,
   decrementProductStock,
 } from "../dao/product.dao.js";
-import { sendOrderConfirmationEmail } from "../services/emailService.js";
+// import { sendOrderConfirmationEmail } from "../services/emailService.js";
 import { createRazorpayOrder } from "../services/payment.service.js";
 
 export async function createOrderController(req, res) {
@@ -212,7 +212,7 @@ export async function updateOrderStatusController(req, res) {
         message: "Order not found",
       });
     }
-
+    
     res.status(200).json({
       message: "Order status updates successfully.",
       order: updatedOrder,

@@ -251,7 +251,6 @@ export async function getProductByIdController(req, res) {
       product,
       hasPurchased: purchased,
     });
-
     await redis.set(cacheKey, cacheValue, "EX", 300);
     res.status(200).json({
       message: "Product fetched successfully.",

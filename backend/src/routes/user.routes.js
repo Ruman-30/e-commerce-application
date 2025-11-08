@@ -35,8 +35,13 @@ router.post(
   apiLimiter,
   createUserLoginController
 );
+router.get('/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account'  // ✅ Force account selection popup
+  })
+);
 
-router.get("/google", passport.authenticate("google", {scope: ["profile", "email"]}));
 router.get("/google/callback", passport.authenticate("google", {session: false}), registerUserByGoogleController);
 router.post("/forgot-password", apiLimiter, forgotPasswordController)
 router.post("/reset-password", apiLimiter, resetPasswordController)

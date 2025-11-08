@@ -3,7 +3,6 @@ import {Strategy as GoogleStrategy} from "passport-google-oauth20";
 import config from "./config.js";
 import { createUserByGoogle, FindOneUser } from "../dao/user.dao.js";
 
-console.log("GOOGLE CALLBACK URL:", `${config.BACKEND_URL}/auth/google/callback`);
 passport.use(new GoogleStrategy({
     clientID: config.GOOGLE_CLIENT_ID,
     clientSecret: config.GOOGLE_CLIENT_SECRET,
