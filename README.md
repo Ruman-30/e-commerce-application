@@ -1,180 +1,180 @@
-🛒 Urban Cart - E-Commerce Backend
+🛒 Urban Cart — Full Stack E-Commerce Application
+🌍 Live Website
 
-A production-ready backend API for a modern e-commerce platform, built with Node.js, Express, MongoDB, and Redis.
-It supports authentication, payments, product management, carts, orders, reviews, OAuth login, caching, and secure token refresh flow — all following industry best practices.
+🔗 https://e-commerce-application-hazel.vercel.app
 
-🚀 Features
+<p align="center"> <img src="https://img.shields.io/badge/Type-Full%20Stack-blueviolet?style=for-the-badge"/> <img src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=white"/> <img src="https://img.shields.io/badge/Backend-Node%20%2B%20Express-339933?style=for-the-badge&logo=node.js&logoColor=white"/> <img src="https://img.shields.io/badge/Database-MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white"/> <img src="https://img.shields.io/badge/Cache-Redis-D92C20?style=for-the-badge&logo=redis&logoColor=white"/> </p>
+
+A production-ready E-Commerce platform with authentication, product catalog, cart, checkout, online payments, order management, admin dashboard, reviews, and more.
+
+✨ Features
 🔐 Authentication & Security
 
-JWT Access + Refresh tokens (with rotation & DB replacement)
+JWT Access + Refresh Tokens (rotation + DB replacement)
 
-Google OAuth 2.0 login
+Google OAuth 2.0 Login
 
-Forgot/Reset password flow using crypto tokens (15 min expiry)
+Forgot / Reset Password via email
 
-Secure cookies for refresh tokens
+Secure HttpOnly cookies
 
-Rate limiting with Redis + express-rate-limit
+Rate Limiting (Redis)
 
-Input validation with express-validator
+Role-based Authorization (Admin/User)
 
-Protected routes (role-based: admin vs user)
+👤 Users
 
-👤 User Management
+Register / Login / Google Login
 
-Register & login with email/password
+Update profile
 
-Google login support
+View order history
 
-Logout with refresh token invalidation
+📦 Product Features
 
-Forgot/reset password with secure email verification (SendGrid)
+Admin: Add / Edit / Delete products
 
-📦 Products
+Cloudinary image uploads
 
-Create, update, delete (admin only)
+Pagination, filtering, category search
 
-Product image upload via Multer + Cloudinary
+MongoDB Atlas full-text search
 
-Pagination, filtering, and category-based search
-
-MongoDB Atlas Search for full-text search
-
-Redis caching for product lists & single products
+Redis caching (Single + List)
 
 🛒 Cart
 
-Persistent cart per user (1 active cart per user)
+Add / update / remove items
 
-Add/update/remove items
+Auto-create cart on first product addition
 
-Clear cart
+Persistent per user
 
-Auto-create cart when adding first item
+📑 Orders & Payments
 
-📑 Orders
+Checkout with COD & Razorpay Online
 
-Place order from cart (COD & Online)
+Auto stock deduction
 
-Razorpay payment integration
-
-COD → instant email + stock deduction
-
-Online payment → order confirmation after payment
-
-Order update/delete routes
-
-Email notifications for order confirmation
+Email confirmations
 
 ⭐ Reviews
 
-Only users who purchased a product can review
+Only verified purchasers can review
 
-Rating + text stored
+Auto-updates rating & count
 
-Product average rating + count updated automatically
+📧 Emails via SendGrid
 
-📧 Emails
+Password reset
 
-SendGrid for transactional emails (password reset, order confirmation)
+Order confirmation
 
-⚡ Performance
+🖥️ Frontend Tech Stack
+Category	Tech
+Framework	React + Vite
+Styling	Tailwind CSS
+State Management	Redux Toolkit
+Server State	React Query
+Forms	RHF + Zod Validation
+Routing	React Router v6
+Animations	Framer Motion
+Notifications	React Toastify
+Deploy	Vercel
+📌 Frontend Pages
+Page	Description
+/	Home: Banners, categories, featured products
+/products	Listing with filters & search
+/product/:id	Product detail, reviews, add to cart
+/cart	Update/Remove items + checkout
+/checkout	COD/Online payment
+/orders	User orders list
+/login /register	Auth + Google OAuth
+/admin/*	Product & order management
+🛠 Backend Tech Stack
+Feature	Tech
+Framework	Express.js
+Database	MongoDB Atlas (Mongoose)
+Cache/Rate Limit	Redis
+Auth	JWT + Google OAuth
+File Storage	Cloudinary (Multer)
+Emails	SendGrid
+Payments	Razorpay
+Docs	Swagger / OpenAPI
+📖 API Docs
 
-Redis caching for frequently accessed product data
+Swagger URL (local):
 
-Redis-backed rate limiting
+http://localhost:5000/docs
 
-Efficient MongoDB queries with pagination, limit & skip
-
-This layered architecture separates concerns and makes the project scalable & production-ready.
-
-🛠️ Tech Stack
-
-Backend Framework: Express.js
-
-Database: MongoDB Atlas (Mongoose ODM)
-
-Cache / Rate Limiting: Redis
-
-Authentication: JWT (Access + Refresh Tokens), Google OAuth
-
-File Storage: Cloudinary (via Multer)
-
-Emails: SendGrid
-
-Payments: Razorpay
-
-Validation: express-validator
-
-API Docs: Swagger/OpenAPI
-
-🔒 Security Best Practices
-
-HttpOnly, Secure cookies for refresh tokens
-
-Passwords hashed with bcrypt
-
-Rate limiting & brute force protection
-
-Input sanitization & validation
-
-Refresh token rotation (replaces old refresh token in DB)
-
-📖 API Documentation
-
-Swagger docs available at:
-
-http://localhost:3000/docs
-
-🚀 Getting Started
-1️⃣ Clone repo
-git clone https://github.com/your-username/urban-cart.git
-cd urban-cart
-
-2️⃣ Install dependencies
+⚙️ Installation
+📌 Clone Repos
+# Backend
+git clone https://github.com/your-username/urban-cart-backend.git
+cd urban-cart-backend
 npm install
 
-3️⃣ Setup environment variables
+# Frontend
+git clone https://github.com/your-username/urban-cart-frontend.git
+cd urban-cart-frontend
+npm install
 
-Create a .env file in root:
-
+🔧 Environment Variables
+Backend .env
 PORT=5000
 MONGO_URI=your_mongodb_atlas_url
+
 JWT_ACCESS_SECRET=your_access_secret
 JWT_REFRESH_SECRET=your_refresh_secret
+
 REDIS_HOST=localhost
 REDIS_PORT=6379
+
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_key
 CLOUDINARY_API_SECRET=your_secret
+
 SENDGRID_API_KEY=your_key
+
 RAZORPAY_KEY_ID=your_key_id
 RAZORPAY_KEY_SECRET=your_secret
 
-4️⃣ Run server
+Frontend .env
+VITE_BACKEND_URL=https://your-backend-domain.com
+VITE_RAZORPAY_KEY_ID=your_payment_key
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+
+▶️ Run Development Servers
+# Backend
+npm run dev
+
+# Frontend
 npm run dev
 
 🧪 Testing
 
-You can test APIs using:
+Postman Collection (/docs)
 
-Postman (collection included in /docs)
+Swagger API Explorer (/docs)
 
-Swagger UI (/docs)
+🚀 Future Improvements
 
-📌 Future Improvements
+Wishlist + Address Book
 
-Multi-device refresh token support (session tracking)
+Bull + Redis Background Jobs
 
-Background jobs with Bull + Redis for email sending
+Razorpay Webhooks
 
-Webhooks for Razorpay payment verification
+Multi-Device Session Tracking
 
-Unit/integration testing with Jest + Supertest
+Admin Dashboard with analytics
 
-Role-based Access Control (RBAC)
+Jest + Supertest full test coverage
 
 👨‍💻 Author
 
 Ruman Khan
-FullStack Web Developer | Node.js | MongoDB | Express | Redis | Cloud-native APIs
+Full-Stack Web Developer
+Node.js | React | MongoDB | Redis | Cloud Native APIs
+
+<p align="left"> <a href="https://github.com/your-profile"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white"/></a> <a href="https://www.linkedin.com/in/your-profile"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"/></a> </p>
