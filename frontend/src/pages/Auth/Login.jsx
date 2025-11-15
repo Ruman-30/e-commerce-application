@@ -112,23 +112,7 @@ const Login = () => {
           <span className="px-2 text-gray-500 text-sm">OR</span>
           <hr className="flex-1 border-gray-300" />
         </div>
-        {/* Google Login Button */}
-        <a
-          href={
-            import.meta.env.MODE === "production"
-              ? "https://urbancart-backend-ifh2.onrender.com/auth/google"
-              : "http://localhost:3000/auth/google"
-          }
-          className="w-full border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition"
-        >
-          <img
-            src="https://www.svgrepo.com/show/355037/google.svg"
-            alt="Google"
-            className="w-5 h-5"
-          />
-          <span>Continue with Google</span>
-        </a>
-
+     
         {/* Register link */}
         <p className="text-center text-sm text-gray-600 mt-6">
           New to UrbanCart?{" "}
