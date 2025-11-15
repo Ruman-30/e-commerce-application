@@ -105,57 +105,7 @@ Docs	Swagger / OpenAPI
 
 Swagger URL (local):
 
-http://localhost:5000/docs
-
-⚙️ Installation
-📌 Clone Repos
-# Backend
-git clone https://github.com/your-username/urban-cart-backend.git
-cd urban-cart-backend
-npm install
-
-# Frontend
-git clone https://github.com/your-username/urban-cart-frontend.git
-cd urban-cart-frontend
-npm install
-
-🔧 Environment Variables
-Backend .env
-PORT=5000
-MONGO_URI=your_mongodb_atlas_url
-
-JWT_ACCESS_SECRET=your_access_secret
-JWT_REFRESH_SECRET=your_refresh_secret
-
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_key
-CLOUDINARY_API_SECRET=your_secret
-
-SENDGRID_API_KEY=your_key
-
-RAZORPAY_KEY_ID=your_key_id
-RAZORPAY_KEY_SECRET=your_secret
-
-Frontend .env
-VITE_BACKEND_URL=https://your-backend-domain.com
-VITE_RAZORPAY_KEY_ID=your_payment_key
-VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
-
-▶️ Run Development Servers
-# Backend
-npm run dev
-
-# Frontend
-npm run dev
-
-🧪 Testing
-
-Postman Collection (/docs)
-
-Swagger API Explorer (/docs)
+http://localhost:3000/docs
 
 🚀 Future Improvements
 
@@ -177,4 +127,4 @@ Ruman Khan
 Full-Stack Web Developer
 Node.js | React | MongoDB | Redis | Cloud Native APIs
 
-<p align="left"> <a href="https://github.com/your-profile"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white"/></a> <a href="https://www.linkedin.com/in/your-profile"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"/></a> </p>
+<p align="left"> <a href="https://github.com/Ruman-30"><img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white"/></a> <a href="https://www.linkedin.com/in/ruman-khan-152190271"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white"/></a> </p>
